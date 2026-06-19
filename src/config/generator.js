@@ -61,18 +61,44 @@ class ConfigGenerator {
      * @param {object} options - Override options (kvBits, maxKvSize, temperature, topP, seed)
      * @returns {string} Shell command
      */
+    /**
+     * Generate mlx_lm.server command matching official MLX-LM SERVER.md
+     * https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/SERVER.md
+     *
+     * Server defaults: port 8080, host localhost, OpenAI-compatible API
+     * Prompt cache: --prompt-cache-size (tokens), not bytes
+     */
     generateMLXServerCommand(modelRef, useCase = 'general', totalRAMGB = 48, options = {}) {
         const preset = this.getOptimalConfig(useCase);
         const temp = options.temperature ?? preset.temperature;
-        const promptCacheBytes = Math.round(totalRAMGB * 0.15 * (1024 ** 3));
+
+        // --prompt-cache-size is in tokens, not bytes
+        // For 48GB: 32768 tokens is safe, for smaller: 8192
+        const promptCacheTokens = totalRAMGB >= 32 ? 32768 : totalRAMGB >= 16 ? 16384 : 8192;
+        const port = options.port || 8080;
+        const host = options.host || '127.0.0.1';
 
         let cmd = `mlx_lm.server --model ${modelRef}`;
-        cmd += ` --prompt-cache-size ${promptCacheBytes}`;
+        cmd += ` --port ${port}`;
+        cmd += ` --host ${host}`;
+        cmd += ` --prompt-cache-size ${promptCacheTokens}`;
         cmd += ` --trust-remote-code`;
         cmd += ` --temp ${temp}`;
-        if (preset.topP) cmd += ` --top-p ${preset.topP}`;
+
+        if (preset.topP && preset.topP !== 1.0) cmd += ` --top-p ${preset.topP}`;
         if (preset.maxTokens) cmd += ` --max-tokens ${preset.maxTokens}`;
-        if (options.seed !== undefined) cmd += ` --seed ${options.seed}`;
+        if (preset.topK) cmd += ` --top-k ${preset.topK}`;
+        if (preset.minP) cmd += ` --min-p ${preset.minP}`;
+
+        // Speculative decoding (optional)
+        if (options.draftModel) cmd += ` --draft-model ${options.draftModel}`;
+        if (options.numDraftTokens) cmd += ` --num-draft-tokens ${options.numDraftTokens}`;
+
+        // Adapter (LoRA) support
+        if (options.adapterPath) cmd += ` --adapter-path ${options.adapterPath}`;
+
+        // Debug
+        if (options.logLevel) cmd += ` --log-level ${options.logLevel}`;
 
         return cmd;
     }
