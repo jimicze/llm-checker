@@ -3017,7 +3017,7 @@ auditCommand
     .option('-u, --use-case <case>', 'Use case when --command check is selected', 'general')
     .option('-c, --category <category>', 'Category hint when --command recommend is selected')
     .option('--optimize <profile>', 'Optimization profile for recommend mode (balanced|speed|quality|context|coding)', 'balanced')
-    .option('--runtime <runtime>', `Runtime for check mode (${SUPPORTED_RUNTIMES.join('|')})`, 'ollama')
+    .option('--runtime <runtime>', `Runtime for check mode (${SUPPORTED_RUNTIMES.join('|')}, auto)`, 'auto')
     .option('--include-cloud', 'Include cloud models in check-mode analysis')
     .option('--max-size <size>', 'Maximum model size for check mode (e.g., "24B" or "12GB")')
     .option('--min-size <size>', 'Minimum model size for check mode (e.g., "3B" or "2GB")')
@@ -3077,7 +3077,7 @@ auditCommand
                     throw new Error('Unable to generate recommendation data for policy audit export.');
                 }
 
-                runtimeBackend = normalizeRuntime(options.runtime || 'ollama');
+                runtimeBackend = normalizeRuntime(options.runtime);
                 policyCandidates = collectCandidatesFromRecommendationData(recommendationResult);
             }
 
@@ -3360,7 +3360,7 @@ program
     .option('--min-size <size>', 'Minimum model size to consider (e.g., "7B" or "7GB")')
     .option('--include-cloud', 'Include cloud models in analysis')
     .option('--ollama-only', 'Only show models available in Ollama')
-    .option('--runtime <runtime>', `Inference runtime (${SUPPORTED_RUNTIMES.join('|')})`, 'ollama')
+    .option('--runtime <runtime>', `Inference runtime (${SUPPORTED_RUNTIMES.join('|')}, auto)`, 'auto')
     .option('--policy <file>', 'Evaluate candidate models against a policy file')
     .option('--performance-test', 'Run performance benchmarks')
     .option('--show-ollama-analysis', 'Show detailed Ollama model analysis')
@@ -3707,7 +3707,7 @@ program
     .description('Show ranking of installed models by compatibility and use-case')
     .option('--sort <by>', 'Sort by: score, size, name (default: score)', 'score')
     .option('--json', 'Output in JSON format')
-    .option('--runtime <runtime>', 'Runtime engine: ollama (default), mlx', 'ollama')
+    .option('--runtime <runtime>', 'Runtime engine: auto, ollama, mlx', 'auto')
     .action(async (options) => {
         const runtime = normalizeRuntime(options.runtime);
 
@@ -4140,7 +4140,7 @@ program
         '--calibrated [file]',
         'Use calibrated routing policy (optional file path; defaults to ~/.llm-checker/calibration-policy.{yaml,yml,json})'
     )
-    .option('--runtime <runtime>', 'Runtime engine: ollama (default), mlx', 'ollama')
+    .option('--runtime <runtime>', 'Runtime engine: auto, ollama, mlx', 'auto')
     .addHelpText(
         'after',
         `
@@ -5018,11 +5018,11 @@ program
     )
     .option('--benchmark', 'Run a short local speed test before launching')
     .option('--reference-only', 'Show model choice and speed reference without launching Ollama')
-    .option('--runtime <runtime>', 'Runtime engine: ollama (default), mlx', 'ollama')
+    .option('--runtime <runtime>', 'Runtime engine: auto, ollama, mlx', 'auto')
     .action(async (options) => {
         showAsciiArt('ai-run');
 
-        const runtime = normalizeRuntime(options.runtime || 'ollama');
+        const runtime = normalizeRuntime(options.runtime);
         if (runtime === 'mlx') {
             await handleMlxAiRun(options);
             return;
@@ -5435,8 +5435,9 @@ program
     .option('-l, --limit <n>', 'Maximum number of recommendations', '5')
     .option('--target-tps <n>', 'Target tokens per second', '20')
     .option('--target-context <n>', 'Target context length', '8192')
-    .option('--include-vision', 'Include vision/multimodal models')
+     .option('--include-vision', 'Include vision/multimodal models')
     .option('--include-embeddings', 'Include embedding models')
+    .option('--runtime <runtime>', 'Runtime engine: auto, ollama, mlx', 'auto')
     .option('-j, --json', 'Output as JSON')
     .addHelpText(
         'after',

@@ -1,9 +1,10 @@
 const SUPPORTED_RUNTIMES = ['ollama', 'vllm', 'mlx'];
 const { normalizePlatform, isTermuxEnvironment } = require('../utils/platform');
 
-function normalizeRuntime(runtime = 'ollama') {
-    const normalized = String(runtime || 'ollama').trim().toLowerCase();
-    return SUPPORTED_RUNTIMES.includes(normalized) ? normalized : 'ollama';
+function normalizeRuntime(runtime = 'auto') {
+    const raw = String(runtime || 'auto').trim().toLowerCase();
+    if (raw === 'auto') return detectBestRuntime();
+    return SUPPORTED_RUNTIMES.includes(raw) ? raw : 'ollama';
 }
 
 function getRuntimeDisplayName(runtime = 'ollama') {
@@ -35,6 +36,20 @@ function isAppleSiliconHardware(hardware = {}) {
 
     // Fallback for partial hardware payloads that still expose Apple-specific identifiers.
     return hasAppleChipSignal;
+}
+
+function detectBestRuntime() {
+    const isAppleSilicon = process.arch === 'arm64' && process.platform === 'darwin';
+    if (isAppleSilicon) {
+        try {
+            const { execSync } = require('child_process');
+            execSync('python3 -c "import mlx_lm"', { stdio: 'ignore', timeout: 3000 });
+            return 'mlx';
+        } catch (e) {
+            return 'ollama';
+        }
+    }
+    return 'ollama';
 }
 
 function runtimeSupportedOnHardware(runtime = 'ollama', hardware = {}) {
@@ -176,6 +191,7 @@ function getRuntimeCommandSet(model = {}, runtime = 'ollama') {
 module.exports = {
     SUPPORTED_RUNTIMES,
     normalizeRuntime,
+    detectBestRuntime,
     getRuntimeDisplayName,
     runtimeSupportedOnHardware,
     runtimeSupportsSpeculativeDecoding,
