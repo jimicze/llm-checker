@@ -116,8 +116,9 @@ describe('MLXClient — edge cases & negatives', () => {
 
     test('generate with empty prompt does not crash', async () => {
         const client = new MLXClient({ mode: 'direct' });
-        // direct mode calls require.resolve('mlx-lm') which will fail
-        // but it should throw MLX not available, not crash
+        // Force unavailable state via cache (avoids actual Python check)
+        client.isAvailable = { available: false, error: 'simulated' };
+        client.lastCheck = Date.now();
         await expect(client.generate('test', ''))
             .rejects.toThrow();
     });

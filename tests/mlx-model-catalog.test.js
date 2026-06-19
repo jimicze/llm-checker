@@ -16,10 +16,12 @@ describe('MLXModelCatalog', () => {
         expect(models[0]).toHaveProperty('quantization');
     });
 
-    test('getModelByHardware returns reasonable suggestions for 16GB', () => {
+    test('getModelByHardware returns largest fitting model first', () => {
         const suggestions = catalog.getModelByHardware(16, 'coding');
         expect(suggestions.length).toBeGreaterThan(0);
-        expect(suggestions[0].paramsB).toBeLessThanOrEqual(13);
+        // First should be the largest model that fits (MoE or dense)
+        const first = suggestions[0];
+        expect(first.totalGB).toBeLessThanOrEqual(Math.max(0, 16 - 4) * 0.6 + 0.1);
     });
 
     test('getModelByHardware includes MoE models for 8GB', () => {

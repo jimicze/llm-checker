@@ -85,7 +85,7 @@ class MLXModelCatalog {
                 return { ...m, ...mem };
             })
             .filter(m => m.totalGB <= effectiveMemoryGB)
-            .sort((a, b) => a.totalGB - b.totalGB);
+            .sort((a, b) => (b.paramsB - a.paramsB) || (a.totalGB - b.totalGB));
     }
 
     normalizeQuantization(quant) {

@@ -283,16 +283,26 @@ class AppleSiliconDetector {
     }
 
     /**
-     * Check if MLX framework is available (mlx-lm package installed)
+     * Check if MLX framework is available (mlx-lm Python package installed)
      */
     mlxAvailable() {
         try {
-            require.resolve('mlx-lm');
-            return true;
+            const { execSync } = require('child_process');
+            const result = execSync('python3 -c "import mlx_lm; print(mlx_lm.__version__)"', {
+                timeout: 5000,
+                encoding: 'utf-8',
+                stdio: ['pipe', 'pipe', 'ignore']
+            });
+            return result.trim().length > 0;
         } catch (e) {
             try {
-                require.resolve('mlx');
-                return true;
+                const { execSync } = require('child_process');
+                const result = execSync('python3 -c "import mlx; print(mlx.__version__)"', {
+                    timeout: 5000,
+                    encoding: 'utf-8',
+                    stdio: ['pipe', 'pipe', 'ignore']
+                });
+                return result.trim().length > 0;
             } catch (e2) {
                 return false;
             }

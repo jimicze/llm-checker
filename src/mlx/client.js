@@ -75,6 +75,10 @@ class MLXClient {
     }
 
     async checkAvailability() {
+        // Use cache regardless of mode
+        if (this.isAvailable !== null && Date.now() - this.lastCheck < this.cacheTimeout) {
+            return this.isAvailable;
+        }
         if (this.mode === MLX_MODES.DIRECT) {
             return this._checkDirectAvailability();
         }
@@ -127,8 +131,14 @@ class MLXClient {
 
     _checkDirectAvailability() {
         try {
-            require.resolve('mlx-lm');
-            this.isAvailable = { available: true, version: 'direct-mlx' };
+            const { execSync } = require('child_process');
+            const version = execSync('python3 -c "import mlx_lm; print(mlx_lm.__version__)"', {
+                timeout: 5000,
+                encoding: 'utf-8',
+                stdio: ['pipe', 'pipe', 'ignore']
+            }).trim();
+            if (!version) throw new Error('empty version');
+            this.isAvailable = { available: true, version: 'mlx-lm@' + version };
             return this.isAvailable;
         } catch (e) {
             this.isAvailable = {
@@ -258,7 +268,7 @@ class MLXClient {
             throw new Error(`MLX not available: ${availability.error}`);
         }
         const { generationOptions = {} } = options;
-        const args = ['-m', 'mlx_lm.generate', '--model', modelName, '--prompt', prompt];
+        const args = ['-m', 'mlx_lm', 'generate', '--model', modelName, '--prompt', prompt];
 
         if (generationOptions.max_tokens) args.push('--max-tokens', String(generationOptions.max_tokens));
         if (generationOptions.temperature !== undefined) args.push('--temp', String(generationOptions.temperature));
