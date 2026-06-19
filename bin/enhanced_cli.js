@@ -3562,6 +3562,160 @@ Policy scope:
         }
     });
 
+// New command: config - Generate configuration for MLX, oMLX, Direct
+program
+    .command('config')
+    .description('Generate MLX/oMLX/Direct configuration for a model')
+    .option('-m, --model <model>', 'Model name/path (e.g. mlx-community/Qwen2.5-0.5B-Instruct-4bit)')
+    .option('-c, --category <category>', 'Use case: coding, reasoning, general, chat', 'general')
+    .option('--runtime <runtime>', 'Runtime: mlx (default), omlx, direct', 'mlx')
+    .option('--ram <gb>', 'Total system RAM in GB (default: auto-detect)', '0')
+    .option('--save', 'Save oMLX config to ~/.omlx/model_settings.json')
+    .option('--json', 'Output as JSON')
+    .action(async (options) => {
+        try {
+            const ConfigGenerator = require('../src/config/generator');
+            const MLXModelCatalog = require('../src/mlx/model-catalog');
+            const AppleSiliconDetector = require('../src/hardware/backends/apple-silicon');
+            const gen = new ConfigGenerator();
+            const detector = new AppleSiliconDetector();
+
+            // Auto-detect RAM
+            let totalRAM = parseInt(options.ram) || 0;
+            if (totalRAM <= 0) {
+                try {
+                    const info = detector.detect();
+                    totalRAM = info?.memory?.unified || 48;
+                } catch {
+                    totalRAM = 48;
+                }
+            }
+
+            // Handle model resolution
+            let modelRef = options.model;
+            if (!modelRef) {
+                // Auto-pick best model for category
+                const catalog = new MLXModelCatalog();
+                const best = catalog.getModelByHardware(totalRAM, options.category || 'general');
+                if (best.length > 0) {
+                    modelRef = best[0].hfPath;
+                    if (!options.json) console.log(chalk.gray(`Auto-selected: ${best[0].name}`));
+                } else {
+                    console.error(chalk.red('No model specified and no compatible model found. Use --model.'));
+                    process.exit(1);
+                }
+            }
+
+            const runtime = options.runtime || 'mlx';
+
+            if (options.json) {
+                const result = {
+                    model: modelRef,
+                    ram: totalRAM,
+                    configs: {}
+                };
+                if (runtime === 'mlx' || runtime === 'all') {
+                    result.configs.mlx_server = gen.generateMLXServerCommand(modelRef, options.category, totalRAM);
+                    result.configs.mlx_direct = gen.generateMLXRunCommand(modelRef, options.category);
+                }
+                if (runtime === 'omlx' || runtime === 'all') {
+                    const omlx = gen.generateOMLXSetupCommand(modelRef, options.category, { totalRAM });
+                    result.configs.omlx = omlx;
+                }
+                if (runtime === 'direct' || runtime === 'all') {
+                    result.configs.direct = gen.generateMLXRunCommand(modelRef, options.category);
+                }
+                console.log(JSON.stringify(result, null, 2));
+                return;
+            }
+
+            console.log(chalk.cyan.bold(`\n╭─ Config: ${modelRef.split('/').pop()} (${options.category}) ───`));
+
+            // mlx_lm.server config
+            if (runtime === 'mlx' || runtime === 'all') {
+                const serverCmd = gen.generateMLXServerCommand(modelRef, options.category, totalRAM);
+                const directCmd = gen.generateMLXRunCommand(modelRef, options.category);
+                const preset = gen.getOptimalConfig(options.category);
+
+                console.log(chalk.cyan(`│`));
+                console.log(chalk.cyan(`│ ${chalk.bold('mlx_lm.server')} (port 8080, host 127.0.0.1):`));
+                console.log(chalk.gray(`│   ${serverCmd}`));
+                console.log(chalk.cyan(`│`));
+                console.log(chalk.cyan(`│ ${chalk.bold('Direct MLX (mlx_lm.generate):')}`));
+                console.log(chalk.gray(`│   ${directCmd}`));
+                console.log(chalk.cyan(`│`));
+                console.log(chalk.cyan(`│ ${chalk.bold('Parameters:')}`));
+                console.log(chalk.gray(`│   temperature=${preset.temperature} top_p=${preset.topP} top_k=${preset.topK || 50}`));
+                console.log(chalk.gray(`│   max_tokens=${preset.maxTokens} repeat_penalty=${preset.repeatPenalty}`));
+                console.log(chalk.gray(`│   kv_bits=4 max_kv_size=32768 (pro mlx_lm.generate)`));
+            }
+
+            // oMLX config
+            if (runtime === 'omlx' || runtime === 'all') {
+                const omlx = gen.generateOMLXSetupCommand(modelRef, options.category, { totalRAM });
+                const kp = omlx.keyParams;
+
+                console.log(chalk.cyan(`│`));
+                console.log(chalk.cyan(`│ ${chalk.bold('oMLX server:')}`));
+                console.log(chalk.gray(`│   ${omlx.serve}`));
+                console.log(chalk.cyan(`│`));
+                console.log(chalk.cyan(`│ ${chalk.bold('oMLX model_settings.json → ' + omlx.configFile)}`));
+                console.log(chalk.gray(`│   ${omlx.modelConfig.replace(/\n/g, '\n│   ')}`));
+                console.log(chalk.cyan(`│`));
+                console.log(chalk.cyan(`│ ${chalk.bold('Key params:')}`));
+                console.log(chalk.gray(`│   temp=${kp.temperature} top_p=${kp.top_p} top_k=${kp.top_k} ctx=${kp.ctx_window}`));
+                console.log(chalk.gray(`│   KV cache: ${kp.kv_cache_bits}bit | Thinking: ${kp.thinking} | DFlash: ${kp.dflash} | MTP: ${kp.mtp}`));
+                console.log(chalk.cyan(`│`));
+                console.log(chalk.cyan(`│ ${chalk.bold('API test:')}`));
+                console.log(chalk.gray(`│   ${omlx.curlExample}`));
+
+                // Save option
+                if (options.save) {
+                    const fs = require('fs');
+                    const path = require('path');
+                    const home = require('os').homedir();
+                    const omlxDir = path.join(home, '.omlx');
+                    const configPath = path.join(omlxDir, 'model_settings.json');
+                    if (!fs.existsSync(omlxDir)) fs.mkdirSync(omlxDir, { recursive: true });
+
+                    let existing = {};
+                    try { existing = JSON.parse(fs.readFileSync(configPath, 'utf-8')); } catch {}
+                    const newConfig = JSON.parse(omlx.modelConfig);
+                    Object.assign(existing, newConfig);
+                    fs.writeFileSync(configPath, JSON.stringify(existing, null, 2));
+                    console.log(chalk.cyan(`│`));
+                    console.log(chalk.green(`│ ✅ Saved to ${configPath}`));
+                }
+            }
+
+            // Direct only
+            if (runtime === 'direct') {
+                const directCmd = gen.generateMLXRunCommand(modelRef, options.category);
+                const preset = gen.getOptimalConfig(options.category);
+                console.log(chalk.cyan(`│`));
+                console.log(chalk.cyan(`│ ${chalk.bold('Direct MLX:')}`));
+                console.log(chalk.gray(`│   ${directCmd}`));
+                console.log(chalk.cyan(`│`));
+                console.log(chalk.cyan(`│ ${chalk.bold('Parameters:')}`));
+                console.log(chalk.gray(`│   temperature=${preset.temperature} top_p=${preset.topP} max_tokens=${preset.maxTokens}`));
+            }
+
+            // OS hint
+            const hint = gen.generateWiredMemoryHint(totalRAM);
+            console.log(chalk.cyan(`│`));
+            console.log(chalk.yellow(`│ ${hint.title}:`));
+            console.log(chalk.gray(`│   ${hint.command}`));
+
+            console.log(chalk.cyan(`╰──────────────────────────────────────────`));
+            console.log(chalk.gray(`\nRAM: ${totalRAM}GB | Use case: ${options.category} | Runtime: ${runtime}`));
+
+        } catch (error) {
+            console.error(chalk.red('\nConfig error:'), error.message);
+            if (process.env.DEBUG) console.error(error.stack);
+            process.exit(1);
+        }
+    });
+
 program
     .command('ollama')
     .description('Check Ollama integration status (use `installed` to rank installed models)')
