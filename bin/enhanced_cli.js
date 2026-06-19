@@ -3266,6 +3266,70 @@ Examples:
         }
     });
 
+/**
+ * Display MLX-specific model recommendations using the MLXModelCatalog.
+ * Called when --runtime mlx is used with check, recommend, or similar commands.
+ */
+async function displayMlxRecommendations(hardware, useCase) {
+    try {
+        const MLXModelCatalog = require('../src/mlx/model-catalog');
+        const ConfigGenerator = require('../src/config/generator');
+        const AppleSiliconDetector = require('../src/hardware/backends/apple-silicon');
+        const detector = new AppleSiliconDetector();
+        const catalog = new MLXModelCatalog();
+        const gen = new ConfigGenerator();
+
+        const isAppleSilicon = hardware.cpu?.architecture === 'arm64' || process.platform === 'darwin';
+        if (!isAppleSilicon) {
+            console.log(chalk.yellow('\n  MLX is only available on Apple Silicon.'));
+            return;
+        }
+
+        const totalRAM = hardware.memory?.total || 48;
+        const mlxInfo = detector.mlxInfo();
+        const effectiveMem = detector.getEffectiveMemoryForMLX() > 0
+            ? detector.getEffectiveMemoryForMLX()
+            : Math.round((totalRAM - 4) * 0.6);
+
+        console.log(chalk.cyan.bold('\n  ── MLX Model Catalog ──'));
+        console.log(chalk.gray(`  MLX: ${mlxInfo.available ? chalk.green('✓') : chalk.yellow('○')}  Effective: ~${effectiveMem}GB  Bandwidth: ${mlxInfo.memoryBandwidthGBs || '?'} GB/s`));
+
+        // Show best model per category
+        const categories = useCase === 'general' ? ['coding', 'reasoning', 'general'] : [useCase];
+        categories.forEach(cat => {
+            const suggestions = catalog.getModelByHardware(effectiveMem, cat);
+            if (suggestions.length === 0) return;
+
+            console.log(chalk.cyan(`\n  ${chalk.bold(cat)}:`));
+            suggestions.slice(0, 3).forEach((m, i) => {
+                const moeTag = m.isMoE ? ` (MoE ${m.activeParamsB}B active)` : '';
+                const qatTag = m.isQAT ? ' [QAT]' : '';
+                const marker = i === 0 ? '►' : '•';
+                console.log(`    ${marker} ${m.name}${qatTag}${moeTag}`);
+                console.log(`      RAM: ${m.totalGB}GB | Quant: ${m.quantization} | Context: ${(m.context || 4096).toLocaleString()}`);
+                // Show run command
+                const cmd = gen.generateOptimizedMLXServerCommand(m.hfPath, cat, totalRAM);
+                console.log(`      ${chalk.gray(cmd)}`);
+            });
+        });
+
+        // OS optimization hint
+        try {
+            const hint = gen.generateWiredMemoryHint(totalRAM);
+            console.log(chalk.yellow(`\n  ${hint.title}:`));
+            console.log(`    ${chalk.gray(hint.command)}`);
+        } catch (e) { /* optional */ }
+
+        console.log(chalk.gray('\n  Use `ai-run --runtime mlx --reference-only` for full details.'));
+
+    } catch (error) {
+        // MLX catalog display is optional — don't crash if it fails
+        if (process.env.DEBUG) {
+            console.error(chalk.red('\n  MLX catalog error:'), error.message);
+        }
+    }
+}
+
 program
     .command('check')
     .description('Analyze your system and show compatible LLM models')
@@ -3457,6 +3521,11 @@ Policy scope:
                 selectedRuntime
             );
             await displayQuickStartCommands(analysis, recommendedModels[0], recommendedModels, selectedRuntime);
+
+            // MLX-specific recommendations when --runtime mlx
+            if (normalizeRuntime(options.runtime) === 'mlx') {
+                await displayMlxRecommendations(hardware, options.useCase || 'general');
+            }
 
             if (policyConfig && policyEvaluation && policyEnforcement) {
                 displayPolicySummary('check', policyConfig, policyEvaluation, policyEnforcement);
@@ -3987,6 +4056,11 @@ Calibrated routing examples:
             // Mostrar recomendaciones
             displayIntelligentRecommendations(intelligentRecommendations, hardware);
             displayCalibratedRoutingDecision('recommend', calibratedPolicy, routeDecision, routingPreference.warnings);
+
+            // MLX-specific recommendations when --runtime mlx
+            if (normalizeRuntime(options.runtime) === 'mlx') {
+                await displayMlxRecommendations(hardware, options.category || 'general');
+            }
 
             if (policyConfig && policyEvaluation && policyEnforcement) {
                 displayPolicySummary('recommend', policyConfig, policyEvaluation, policyEnforcement);
