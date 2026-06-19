@@ -6108,6 +6108,71 @@ program
                 }
             }
 
+            // ── Engine Comparison & MLX Recommendations ──
+            try {
+                const isAppleSilicon = process.arch === 'arm64' && process.platform === 'darwin';
+                if (isAppleSilicon) {
+                    const AppleSiliconDetector = require('../src/hardware/backends/apple-silicon');
+                    const MLXModelCatalog = require('../src/mlx/model-catalog');
+                    const ConfigGenerator = require('../src/config/generator');
+                    const detector = new AppleSiliconDetector();
+                    const catalog = new MLXModelCatalog();
+                    const gen = new ConfigGenerator();
+                    const mlxInfo = detector.mlxInfo();
+                    const effectiveMem = detector.getEffectiveMemoryForMLX() || Math.round((hardware.memory?.total || 48) * 0.5);
+                    const totalRAM = hardware.memory?.total || 48;
+
+                    console.log(chalk.cyan.bold('\n╭─ Engine Comparison ────────────────────'));
+                    console.log(chalk.cyan(`│ Platform: Apple Silicon Mac`));
+                    console.log(chalk.green(`│ 🥇 MLX (${mlxInfo.available ? '✓ installed' : '○ not installed'})`));
+                    console.log(chalk.cyan(`│    Best perf, unified memory, 4-bit KV cache`));
+                    console.log(chalk.cyan(`│    ${chalk.bold('oMLX:')} brew install omlx && omlx serve`));
+                    console.log(chalk.cyan(`│    ${chalk.bold('Direct:')} pip install -U mlx-lm`));
+                    console.log(chalk.gray(`│ 🥈 Ollama`));
+                    console.log(chalk.gray(`│    Multiplatforma, jednoduchý, ale nižší výkon na Apple Silicon`));
+                    console.log(chalk.gray(`│    ollama pull <model>`));
+                    console.log(chalk.gray(`│ 🥉 llama.cpp / vLLM`));
+                    console.log(chalk.gray(`│    Podpora přes Metal, ale bez unified memory výhody`));
+                    console.log(chalk.cyan(`╰────────────────────────────────────────`));
+
+                    console.log(chalk.cyan(`\n╭─ MLX Recommendations (${effectiveMem}GB usable) ───`));
+                    ['coding', 'reasoning', 'general'].forEach(cat => {
+                        const suggestions = catalog.getModelByHardware(totalRAM, cat);
+                        if (suggestions.length > 0) {
+                            const best = suggestions[0];
+                            const moeTag = best.isMoE ? ` MoE(${best.activeParamsB}B)` : '';
+                            const sc = best.scoreComponents;
+                            const scoreColor = best.score >= 80 ? chalk.green : best.score >= 60 ? chalk.yellow : chalk.red;
+                            console.log(`│ ${chalk.bold(cat)}: ${best.name}${moeTag}`);
+                            console.log(`│    ${scoreColor(`${best.score}/100`)} [Q:${sc[0]} S:${sc[1]} F:${sc[2]} C:${sc[3]}] | ${best.totalGB}GB | ${best.quantization}`);
+                            const kp = gen.generateOMLXSetupCommand(best.hfPath, cat, { totalRAM }).keyParams;
+                            console.log(`│    temp=${kp.temperature} ctx=${kp.ctx_window} kv_cache=${kp.kv_cache_bits}bit`);
+                        }
+                    });
+                    console.log(chalk.cyan(`╰────────────────────────────────────────`));
+
+                    // OS hint
+                    const hint = gen.generateWiredMemoryHint(totalRAM);
+                    console.log(chalk.yellow(`\n  ${hint.title}:`));
+                    console.log(`    ${chalk.gray(hint.command)}`);
+
+                    console.log(chalk.gray(`\n  Tip: llm-checker ai-run --runtime mlx --prompt "..."`));
+                    console.log(chalk.gray(`  Nebo: llm-checker check --runtime mlx`));
+                } else {
+                    // Non-Apple Silicon: show Ollama as primary, mention alternatives
+                    console.log(chalk.cyan.bold('\n╭─ Engine Recommendation ───────────────'));
+                    console.log(chalk.cyan(`│ 🥇 Ollama (multiplatforma, nejsnazší)`));
+                    if (/nvidia|rtx|gtx/i.test(JSON.stringify(hardware))) {
+                        console.log(chalk.gray(`│ 🥈 vLLM (production) / llama.cpp (CUDA)`));
+                    } else {
+                        console.log(chalk.gray(`│ 🥈 llama.cpp (CPU/GPU hybrid)`));
+                    }
+                    console.log(chalk.cyan(`╰──────────────────────────────────────`));
+                }
+            } catch (e) {
+                // MLX recommendations non-critical
+            }
+
             console.log(chalk.gray(`\nFingerprint: ${hardware.fingerprint}`));
             console.log('');
 
