@@ -44,17 +44,80 @@ Choosing the right LLM for your hardware is complex. With thousands of model var
 | **Calibrated** | Memory Estimation | Bytes-per-parameter formula validated against real Ollama sizes |
 | **Zero** | Native Dependencies | Pure JavaScript &mdash; works on any Node.js 16+ system |
 | **Live** | AI Run Metrics | `ai-run` shows response speed in tokens/sec next to model output |
-| **MLX** | Apple Silicon Backend | Run models via MLX on Apple Silicon, config generation, curated model catalog |
+| **MLX** | Apple Silicon Backend | Run models via MLX on Apple Silicon (oMLX, mlx_lm.server, direct), 5,477 synced models, 4D scoring, config generation, MCP tools |
 
 ---
 
 ## MLX Backend (Apple Silicon)
 
-llm-checker now supports running models via MLX on Apple Silicon Macs,
-in addition to the default Ollama backend. Use the `--runtime mlx` flag:
+llm-checker fully supports running models via **MLX** on Apple Silicon Macs,
+in addition to the default Ollama backend. On Apple Silicon, runtime auto-detects
+to MLX — no `--runtime` flag needed.
+
+### Quick Start (MLX)
 
 ```bash
-llm-checker ai-run --runtime mlx --prompt "Hello"
+# 1. Install MLX
+pip install -U mlx-lm
+
+# 2. HW detection + engine comparison
+llm-checker hw-detect
+
+# 3. MLX model recommendations with 4D scoring
+llm-checker recommend --runtime mlx --category coding
+
+# 4. Generate configuration (mlx_lm.server + oMLX + Direct)
+llm-checker config --model mlx-community/Qwen2.5-0.5B-Instruct-4bit
+
+# 5. Run with MLX
+llm-checker ai-run --prompt "Write hello world in Python"
+```
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| **Auto-detect** | Apple Silicon → MLX, else → Ollama. No `--runtime` needed |
+| **5,477 models** | Synced from HuggingFace mlx-community |
+| **4D Scoring** | Quality, Speed, Fit, Context — same as Ollama |
+| **3 runtimes** | oMLX server, mlx_lm.server (port 8080), direct subprocess |
+| **Config generator** | Full oMLX model_settings.json with thinking, KV cache, DFlash, MTP |
+| **MCP tools** | `mlx_list_models`, `mlx_generate`, `mlx_optimize` |
+
+### MLX Commands
+
+| Command | Description |
+|---------|-------------|
+| `hw-detect` | HW + engine comparison (MLX 🥇 vs Ollama 🥈 vs llama.cpp 🥉) |
+| `check --runtime mlx` | Compatibility analysis with MLX scoring |
+| `recommend --runtime mlx` | Model recommendations with [Q,S,F,C] scores |
+| `ai-run --runtime mlx` | Run inference via MLX (default on Apple Silicon) |
+| `config --model <hf>` | Generate mlx_lm.server + oMLX + Direct config |
+| `config --runtime omlx --save` | Generate and save oMLX config to `~/.omlx/model_settings.json` |
+| `installed --runtime mlx` | List locally downloaded MLX models (from HF cache) |
+| `mlx-sync --all --save` | Sync all 5,477 mlx-community models from HuggingFace |
+| `smart-recommend --runtime mlx` | Advanced scoring engine |
+| `list-models --runtime mlx` | List MLX models (delegates to installed) |
+
+### oMLX Configuration
+
+Generate complete oMLX config with all parameters:
+
+```bash
+llm-checker config --model mlx-community/Qwen2.5-0.5B-Instruct-4bit --runtime omlx
+```
+
+Output includes:
+- `temperature`, `top_p`, `top_k`, `min_p`, `repetition_penalty`
+- `ctx_window`, `max_tokens` (model-size-aware — tiny models get smaller ctx)
+- `thinking_enabled`, `thinking_budget` (reasoning models)
+- `turboquant_kv_cache`, `dflash_enabled`, `native_mtp`, `spec_prefill`
+- OS optimization: `sudo sysctl iogpu.wired_mem_limit=43008`
+
+Save directly:
+```bash
+llm-checker config --model mlx-community/Qwen2.5-0.5B-Instruct-4bit --runtime omlx --save
+# → writes to ~/.omlx/model_settings.json
 ```
 
 See [MLX Guide](docs/guides/mlx-guide.md) for complete documentation.
@@ -105,7 +168,10 @@ npm install -g llm-checker
 
 **Requirements:**
 - Node.js 16+ (any version: 16, 18, 20, 22, 24)
-- [Ollama](https://ollama.ai) installed for running models
+- [Ollama](https://ollama.ai) installed for running models (Ollama mode)
+- **Apple Silicon Mac + Python 3.10+** for MLX mode (optional)
+  - `pip install -U mlx-lm` for MLX support
+  - `brew install omlx` for oMLX server (macOS 15+)
 
 The package includes a prebuilt model catalog and declares `sql.js` as an optional dependency for SQLite-powered commands. If your package manager skips optional dependencies and database commands report `sql.js` missing, reinstall with optional dependencies enabled:
 
@@ -118,6 +184,30 @@ npm install -g llm-checker --include=optional
 ## Start Here (2 Minutes)
 
 If you are new, use this exact flow:
+
+### On Apple Silicon (auto-detects MLX)
+
+```bash
+# 1) Install
+npm install -g llm-checker
+
+# 2) Detect your hardware + engine comparison
+llm-checker hw-detect
+
+# 3) Get MLX model recommendations with 4D scoring
+llm-checker recommend --runtime mlx --category coding
+
+# 4) Generate configuration
+llm-checker config --model mlx-community/Qwen2.5-0.5B-Instruct-4bit
+
+# 5) Save oMLX config
+llm-checker config --model mlx-community/Qwen2.5-0.5B-Instruct-4bit --runtime omlx --save
+
+# 6) Run with auto-selection
+llm-checker ai-run --category coding --prompt "Write a hello world in Python"
+```
+
+### On Other Platforms (auto-detects Ollama)
 
 ```bash
 # 1) Install
@@ -134,12 +224,6 @@ llm-checker sync
 
 # 5) Run with auto-selection and tokens/sec metrics
 llm-checker ai-run --category coding --prompt "Write a hello world in Python"
-```
-
-If you already calibrated routing:
-
-```bash
-llm-checker ai-run --calibrated --category coding --prompt "Refactor this function"
 ```
 
 ---
@@ -378,16 +462,35 @@ llm-checker search "qwen coder" --json
 
 ## Commands
 
+### MLX Commands (Apple Silicon)
+
+| Command | Description |
+|---------|-------------|
+| `config --model <hf>` | Generate mlx_lm.server + oMLX + Direct config (--runtime all\|mlx\|omlx\|direct) |
+| `config --runtime omlx --save` | Save oMLX config to `~/.omlx/model_settings.json` |
+| `mlx-sync --all --save` | Sync 5,477 MLX models from HuggingFace mlx-community |
+| `ai-run --runtime mlx` | Run inference via MLX (auto-detected on Apple Silicon) |
+| `check --runtime mlx` | Compatibility with MLX 4D scoring |
+| `recommend --runtime mlx` | MLX model recommendations with [Q,S,F,C] scores |
+| `installed --runtime mlx` | List downloaded MLX models (from HF cache) |
+| `list-models --runtime mlx` | List MLX models (delegates to installed) |
+| `smart-recommend --runtime mlx` | Advanced MLX scoring engine |
+| `ai-check --runtime mlx` | AI-powered MLX model evaluation |
+| MCP: `mlx_list_models` | List available MLX models via MCP |
+| MCP: `mlx_generate` | Run inference with MLX via MCP |
+| MCP: `mlx_optimize` | Get optimal MLX config via MCP |
+
 ### Core Commands
 
 | Command | Description |
 |---------|-------------|
-| `hw-detect` | Detect GPU/CPU capabilities, memory, backends |
-| `check` | Full system analysis with compatible models and recommendations |
-| `recommend` | Intelligent recommendations by category (coding, reasoning, multimodal, etc.) |
+| `hw-detect` | Detect GPU/CPU capabilities + engine comparison (MLX vs Ollama vs llama.cpp) |
+| `check` | Full system analysis with compatible models and recommendations (--runtime mlx) |
+| `recommend` | Intelligent recommendations by category (--runtime mlx) |
+| `config` | Generate MLX/oMLX/Direct configuration (default: all 3 runtimes) |
 | `calibrate` | Generate calibration result + routing policy artifacts from a JSONL prompt suite |
-| `installed` | Rank your installed Ollama models by compatibility |
-| `list-models` | List the synced Ollama catalog by popularity, category, size, or JSON output |
+| `installed` | Rank your installed Ollama/MLX models by compatibility (--runtime mlx) |
+| `list-models` | List the synced catalog by popularity, category, size, or JSON output (--runtime mlx) |
 | `ollama-plan` | Compute safe Ollama runtime env vars (`NUM_CTX`, `NUM_PARALLEL`, `MAX_LOADED_MODELS`) for selected local models |
 | `mcp-setup` | Print/apply Claude MCP setup command and config snippet (`--apply`, `--json`, `--npx`) |
 | `gpu-plan` | Multi-GPU placement advisor with single/pooled model-size envelopes |
@@ -401,7 +504,8 @@ llm-checker search "qwen coder" --json
 |---------|-------------|
 | `sync` | Refresh the local SQLite model catalog from Ollama |
 | `search <query>` | Search the synced catalog with filters and intelligent scoring |
-| `smart-recommend` | Advanced recommendations using the full scoring engine |
+| `smart-recommend` | Advanced recommendations using the full scoring engine (--runtime mlx) |
+| `mlx-sync --all --save` | Sync all 5,477 MLX models from HuggingFace mlx-community |
 
 ### Enterprise Policy Commands
 

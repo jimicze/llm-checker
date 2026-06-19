@@ -1,48 +1,67 @@
 # mlx-ranker (fork of llm-checker) — Agent Guide
 
-This project extends [llm-checker](https://github.com/Pavelevich/llm-checker) (v3.6.0, JavaScript/Node.js) with MLX backend support for Apple Silicon. It is currently in **research phase** — the llm-checker fork has not been cloned yet. Implementation follows the plan at `docs/superpowers/plans/`. Commands reference the upstream llm-checker structure, not the local repo (which has no code yet).
+This project extends [llm-checker](https://github.com/Pavelevich/llm-checker) (v3.6.0, JavaScript/Node.js) with **MLX backend support for Apple Silicon**. The fork is at `github.com/jimicze/llm-checker` (branch `main`). MLX features are fully implemented — see `docs/superpowers/plans/2026-06-19-mlx-backend-for-llm-checker.md`.
 
 ---
 
 ## 1. Commands
 
-### Current Phase (Research Only)
+### All Commands
 
 ```bash
-# View implementation plan
-cat docs/superpowers/plans/2026-06-19-mlx-backend-for-llm-checker.md
+# HW detection + engine comparison
+node bin/enhanced_cli.js hw-detect
 
-# View research documents
-ls .opencode/research/
+# Compatibility check (auto-detect runtime)
+node bin/enhanced_cli.js check --runtime mlx
+
+# Model recommendations with 4D scoring
+node bin/enhanced_cli.js recommend --runtime mlx --category coding
+
+# Generate MLX/oMLX/Direct configuration
+node bin/enhanced_cli.js config --model mlx-community/Qwen2.5-0.5B-Instruct-4bit
+
+# Save oMLX config
+node bin/enhanced_cli.js config --model mlx-community/Qwen2.5-0.5B-Instruct-4bit --runtime omlx --save
+
+# Run inference with MLX
+node bin/enhanced_cli.js ai-run --runtime mlx --prompt "Hello"
+
+# List installed MLX models (from HF cache)
+node bin/enhanced_cli.js installed --runtime mlx
+
+# Sync all 5,477 MLX models from HuggingFace
+node bin/enhanced_cli.js mlx-sync --all --save
+
+# Smart recommendations
+node bin/enhanced_cli.js smart-recommend --runtime mlx
+
+# AI check
+node bin/enhanced_cli.js ai-check --runtime mlx
+
+# Help
+node bin/enhanced_cli.js config --help
 ```
 
-### After Fork & Clone (llm-checker)
+### Testing
 
 ```bash
-# Install dependencies
-npm install
-
-# Dev / run CLI
-node bin/enhanced_cli.js hw-detect          # Quick hardware check
-node bin/enhanced_cli.js check               # Full compatibility check
-node bin/enhanced_cli.js recommend --category coding  # Model recommendations
-node bin/enhanced_cli.js ai-run --prompt "Hello" --runtime mlx  # MLX run
+# Run all MLX tests (Jest)
+npx jest tests/mlx-*
+npx jest tests/config-generator*
+npx jest tests/mlx-edge-cases.test.js
 
 # Run all tests
 node tests/run-all-tests.js
 
-# Run a single test file
-node tests/hardware-detector-regression.js
-
-# Run Jest tests (for MLX-specific files)
+# Run single test
 npx jest tests/mlx-client.test.js --verbose
-npx jest tests/mlx-*                          # All MLX tests
 
-# Lint / format (upstream has none configured)
-# No linter configured yet. Maintain style manually.
+# All 114 MLX tests
+npx jest tests/mlx-* tests/apple-silicon-mlx.test.js tests/config-generator* tests/mlx-*-edge-cases.test.js tests/mlx-edge-cases.test.js
 ```
 
-### Planned Scripts (to add in package.json)
+### Scripts (in package.json)
 
 ```json
 "scripts": {
@@ -51,7 +70,8 @@ npx jest tests/mlx-*                          # All MLX tests
   "test:mlx": "npx jest tests/mlx-*",
   "test:hw": "node tests/hardware-detector-regression.js",
   "hw-detect": "node bin/enhanced_cli.js hw-detect",
-  "recommend": "node bin/enhanced_cli.js recommend"
+  "recommend": "node bin/enhanced_cli.js recommend",
+  "mlx-sync": "node bin/enhanced_cli.js mlx-sync --all --save"
 }
 ```
 
@@ -59,28 +79,7 @@ npx jest tests/mlx-*                          # All MLX tests
 
 ## 2. Repository Structure
 
-### Current (Research Phase)
-
-```
-mlx-ranker/
-├── AGENTS.md                          ← This file
-├── .opencode/
-│   ├── research/                      ← 7 research documents (HW detection,
-│   │   ├── FINDINGS.md                    engine comparison, model recs, etc.)
-│   │   ├── EXTENDING_LLM_CHECKER.md
-│   │   ├── ENGINE_COMPARISON.md
-│   │   ├── HARDWARE_DETECTION_REFERENCE.md
-│   │   ├── MODEL_RECOMMENDATIONS.md
-│   │   ├── QUESTIONS.md
-│   │   └── SOURCES.md
-│   ├── LEARNINGS.md                   ← Bugs, errors, lessons learned
-│   ├── PROGRESS.md                    ← Task tracking across sessions
-│   └── MEMORY.md                      ← Decisions, patterns, preferences
-└── docs/superpowers/plans/
-    └── 2026-06-19-mlx-backend-for-llm-checker.md  ← Implementation plan
-```
-
-### Planned (After Fork — Based on llm-checker v3.6.0)
+### Current (Fork — llm-checker v3.6.0 + MLX)
 
 ```
 mlx-ranker/
@@ -173,25 +172,27 @@ LLMChecker class (src/index.js — 2513 lines)
     └── MLXClient (NEW) → MLX execution (oMLX API + direct)
 ```
 
-### MLX Backend Extension (Planned)
+### MLX Backend Extension (Implemented)
 
 ```
-CLI (--runtime mlx flag)
+CLI (--runtime mlx flag, auto-detect on Apple Silicon)
     │
     ▼
 LLMChecker
     │
-    ├── AppleSiliconDetector.mlxAvailable()  ← NEW method
-    ├── MLXModelCatalog                      ← NEW
-    │   ├── getModelByHardware(mem, useCase)
-    │   └── searchHuggingface(query)
-    ├── MLXClient                            ← NEW
+    ├── AppleSiliconDetector.mlxAvailable()  ← detects Python mlx_lm package
+    ├── MLXModelCatalog                      ← 5,477 synced models from HF
+    │   ├── getModelByHardware(mem, useCase)  ← with 4D scoring
+    │   └── searchHuggingface(query)          ← cursor-based pagination
+    ├── MLXClient                            ← oMLX API + direct subprocess
     │   ├── Mode A (oMLX API): POST :8000/v1/chat/completions
-    │   └── Mode B (Direct): python3 -m mlx_lm.generate ...
-    └── ConfigGenerator                      ← NEW
-        ├── generateMLXRunCommand()
-        ├── generateOMLXSettings()
-        └── generateOllamaModelfile()
+    │   └── Mode B (Direct): python3 -m mlx_lm generate ...
+    └── ConfigGenerator                      ← MLX, oMLX, Ollama, llama.cpp
+        ├── generateMLXRunCommand()           ← mlx_lm.generate with --kv-bits
+        ├── generateMLXServerCommand()        ← mlx_lm.server port 8080
+        ├── generateOMLXSetupCommand()        ← full model_settings.json
+        ├── generateOllamaModelfile()          ← Ollama Modelfile
+        └── generateLLamaCppCommand()         ← llama-cli command
 ```
 
 ### Key Design Decisions
