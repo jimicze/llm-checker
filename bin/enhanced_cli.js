@@ -3291,6 +3291,14 @@ async function displayMlxRecommendations(hardware, useCase) {
             ? detector.getEffectiveMemoryForMLX()
             : Math.round((totalRAM - 4) * 0.6);
 
+        // Engine recommendation
+        console.log(chalk.cyan.bold('\n  ── Engine Recommendation ──'));
+        console.log(chalk.gray(`  Platform: Apple Silicon Mac`));
+        console.log(chalk.green(`  Best engine: MLX (oMLX server)`));
+        console.log(chalk.gray(`  ├ ${chalk.bold('oMLX')} — doporučený: brew install omlx && omlx serve`));
+        console.log(chalk.gray(`  ├ ${chalk.bold('MLX direct')} — bez serveru: pip install -U mlx-lm`));
+        console.log(chalk.gray(`  └ ${chalk.bold('Ollama')} — fallback (nižší výkon na Apple Silicon)`));
+
         console.log(chalk.cyan.bold('\n  ── MLX Model Catalog ──'));
         console.log(chalk.gray(`  MLX: ${mlxInfo.available ? chalk.green('✓') : chalk.yellow('○')}  Effective: ~${effectiveMem}GB  Bandwidth: ${mlxInfo.memoryBandwidthGBs || '?'} GB/s`));
 
@@ -4740,6 +4748,57 @@ async function handleMlxAiRun(options) {
         console.log(`  Platform: ${systemInfo.os?.platform || process.platform}`);
         console.log(`  CPU: ${systemInfo.cpu?.brand || 'Unknown'}`);
         console.log(`  RAM: ${systemInfo.memory?.total || 0}GB`);
+
+        // ── Platform & Engine Recommendation ──
+        try {
+            const platform = process.platform;
+            const arch = process.arch;
+            const gpuInfo = systemInfo.gpu?.model || '';
+            const isAppleSilicon = arch === 'arm64' && platform === 'darwin';
+            const hasNvidia = /nvidia|rtx|gtx|quadro|tesla/i.test(gpuInfo) || systemInfo.gpu?.vendor === 'nvidia';
+            const hasAmd = /amd|radeon|rocm/i.test(gpuInfo) || systemInfo.gpu?.vendor === 'amd';
+            const hasIntel = /intel|arc/i.test(gpuInfo);
+            const totalRAM = systemInfo.memory?.total || 0;
+
+            console.log(chalk.cyan('\n╭─ Engine Recommendation ───────────────'));
+
+            if (isAppleSilicon) {
+                console.log(chalk.cyan(`│ Platform: ${chalk.white('Apple Silicon Mac')}`));
+                console.log(chalk.cyan(`│ Best engine: ${chalk.green.bold('MLX (oMLX server)')}`));
+                console.log(chalk.cyan(`│`));
+                console.log(chalk.cyan(`│ ${chalk.bold('oMLX')} — doporučený (OpenAI API, MCP, KV cache)`));
+                console.log(chalk.cyan(`│   brew install omlx && omlx serve`));
+                console.log(chalk.cyan(`│ ${chalk.bold('MLX direct')} — jednoduchý, bez serveru`));
+                console.log(chalk.cyan(`│   pip install -U mlx-lm`));
+                console.log(chalk.cyan(`│ ${chalk.bold('Ollama')} — fallback (multiplatforma, nižší výkon)`));
+                if (totalRAM >= 32) {
+                    console.log(chalk.cyan(`│`));
+                    console.log(chalk.cyan(`│ 📌 Pro 48GB RAM ideální: oMLX server s --kv-bits 4`));
+                    console.log(chalk.cyan(`│    Zvládne modely až 27B v 4-bit, 12B v 8-bit`));
+                }
+            } else if (hasNvidia && platform === 'linux') {
+                console.log(chalk.cyan(`│ Platform: ${chalk.white('Linux + NVIDIA GPU')}`));
+                console.log(chalk.cyan(`│ Best engine: ${chalk.green.bold('vLLM (production) / llama.cpp (single)')}`));
+                console.log(chalk.cyan(`│ ${chalk.bold('vLLM')} — nejvyšší propustnost, continuous batching`));
+                console.log(chalk.cyan(`│ ${chalk.bold('llama.cpp')} — jednoduchý, široká podpora kvantizací`));
+                console.log(chalk.cyan(`│ ${chalk.bold('Ollama')} — rychlý start`));
+            } else if (hasNvidia && platform === 'win32') {
+                console.log(chalk.cyan(`│ Platform: ${chalk.white('Windows + NVIDIA GPU')}`));
+                console.log(chalk.cyan(`│ Best engine: ${chalk.green.bold('Ollama / llama.cpp')}`));
+                console.log(chalk.cyan(`│ ${chalk.bold('Ollama')} — nejsnazší instalace`));
+                console.log(chalk.cyan(`│ ${chalk.bold('llama.cpp')} — CUDA akcelerace, GGUF formát`));
+            } else if (hasAmd) {
+                console.log(chalk.cyan(`│ Platform: ${chalk.white('AMD GPU')}`));
+                console.log(chalk.cyan(`│ Best engine: ${chalk.green.bold('llama.cpp (HIP) / vLLM (ROCm)')}`));
+            } else {
+                console.log(chalk.cyan(`│ Platform: ${chalk.white(platform + ' ' + arch)}`));
+                console.log(chalk.cyan(`│ Best engine: ${chalk.green.bold('llama.cpp (CPU)')}`));
+                console.log(chalk.cyan(`│ ${chalk.bold('llama.cpp')} — nejlepší CPU optimalizace (AVX512, AMX)`));
+            }
+            console.log(chalk.cyan(`╰──────────────────────────────────────`));
+        } catch (e) {
+            // Engine recommendation non-critical
+        }
 
         // Apple Silicon MLX hardware info
         try {
