@@ -4,58 +4,44 @@
 
 ---
 
-## Current Sprint: Research & Planning
+## Current Sprint: MLX Backend Implementation
 
-**Goal:** Complete research phase, finalize architecture decisions, create implementation plan, and begin forking llm-checker.
+**Goal:** Extend llm-checker with MLX backend support for Apple Silicon.
 
 ### In Progress
 
-- None currently.
+- No active tasks.
 
 ### Completed
 
 | Date | Task | Details |
 |------|------|---------|
-| 2026-06-19 | Research llm-checker architecture | Analyzed source code, identified 60% MLX scaffolding already exists |
-| 2026-06-19 | Research MLX framework | Covered capabilities, platform support (now Linux CUDA too!), quantization, config params |
-| 2026-06-19 | Research inference engines | Compared MLX, Ollama, llama.cpp, vLLM across all platforms |
-| 2026-06-19 | Research hardware detection | Apple Silicon, NVIDIA, AMD, CPU — code samples for each |
-| 2026-06-19 | Research model recommendations | Ranked coding/reasoning/general models, hardware tier mappings, config presets |
-| 2026-06-19 | Research configuration parameters | Temperature, top_p, thinking budgets, KV cache — per engine and per use case |
-| 2026-06-19 | Research llm-checker extensibility | Confirmed adding MLX backend is feasible (~5-10 days effort) |
-| 2026-06-19 | Research oMLX as backend | OpenAI-compatible API makes integration straightforward |
-| 2026-06-19 | Created 7 research documents | `.opencode/research/{FINDINGS,QUESTIONS,SOURCES,ENGINE_COMPARISON,MODEL_RECOMMENDATIONS,HARDWARE_DETECTION_REFERENCE,EXTENDING_LLM_CHECKER}.md` |
-| 2026-06-19 | Created implementation plan | `docs/superpowers/plans/2026-06-19-mlx-backend-for-llm-checker.md` — 10 tasks, 1881 lines, complete with code |
-| 2026-06-19 | Created AGENTS.md | Comprehensive agent guide with all sections |
-| 2026-06-19 | Created persistent memory files | LEARNINGS.md, PROGRESS.md, MEMORY.md initialized |
+| 2026-06-19 | **All 10 tasks complete** | MLX backend fully implemented and committed |
+| 2026-06-19 | Task 0: Fork & repo setup | Cloned llm-checker v3.6.0, npm install, git init |
+| 2026-06-19 | Task 1: src/mlx/client.js | MLXClient class (365 lines, 7 tests) — oMLX API + direct subprocess |
+| 2026-06-19 | Task 2: Apple Silicon MLX | Added mlxAvailable(), mlxInfo(), effectiveMemory, MLX speed multiplier |
+| 2026-06-19 | Task 3: CLI --runtime flag | ai-run dispatchuje na MLX backend, --runtime mlx flag |
+| 2026-06-19 | Task 4: src/config/generator.js | ConfigGenerator (124 lines, 6 tests) — presets pro 8 use cases, 4 enginy |
+| 2026-06-19 | Task 5: src/mlx/model-catalog.js | MLXModelCatalog (130 lines, 6 tests) — 15 seed modelů + HF API |
+| 2026-06-19 | Task 6: Wire into LLMChecker | MLXClient + ConfigGenerator integrovány do LLMChecker třídy |
+| 2026-06-19 | Task 7: MCP tools | 3 tooly: mlx_list_models, mlx_generate, mlx_optimize |
+| 2026-06-19 | Task 8: Integration tests | 8 integration testů (21 total MLX testů) |
+| 2026-06-19 | Task 9: Documentation | mlx-guide.md, PR_TEMPLATE.md, README update |
+| 2026-06-19 | Task 10: Final verification | 33/33 testů prochází, commit f5fb5ec |
 
 ---
 
-## Backlog
+## Next Sprint: Phase 2 Features
 
-### Phase 1: Fork & Foundation
-- [ ] Task 0: Fork llm-checker to private repo, set up remotes
-- [ ] Task 1: Create `src/mlx/client.js` — MLX execution client
-- [ ] Task 2: Enhance Apple Silicon detection with MLX check
-- [ ] Task 3: Add `--runtime` CLI flag and dispatch
-
-### Phase 2: Model Discovery
-- [ ] Task 4: Create `src/config/generator.js` — config generator
-- [x] Task 5: Create `src/mlx/model-catalog.js` — MLX model catalog
-
-### Phase 3: Integration
-- [ ] Task 6: Wire everything into LLMChecker class
-- [ ] Task 7: Add MLX MCP tools
-- [ ] Task 8: Integration tests
-- [ ] Task 9: Documentation & PR preparation
-- [ ] Task 10: Final verification & push
-
----
+### Planned (not started)
+- [ ] Add `--runtime mlx` to `check`, `installed` commands
+- [ ] MLX model sync command (`llm-checker mlx-sync`) — sync seed catalog from HuggingFace
+- [ ] Linux CUDA MLX support (MLX now supports CUDA backend on Linux)
+- [ ] Vylepšený `recommend --runtime mlx` výstup
+- [ ] Push PR upstream to Pavelevich/llm-checker (připraven template v `docs/superpowers/PR_TEMPLATE.md`)
 
 ## Known Issues
 
-- None yet (project is in research phase, no code exists)
-
-## Technical Debt
-
-- None yet (no code to have debt from)
+- `mlx_lm.generate` writes progress logs to stderr — the direct mode ignores stderr but this means errors are also swallowed
+- `systeminformation` npm package can be slow (1-3s) on first call — this is upstream behavior
+- Pool `Worker` cleanup warning in Jest tests — harmless, from upstream's test infra
