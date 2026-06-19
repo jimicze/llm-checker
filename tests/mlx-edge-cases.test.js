@@ -221,7 +221,9 @@ describe('MLXModelCatalog — edge cases & negatives', () => {
 
     test('parseModelName handles random string with no numbers', () => {
         const result = MLXModelCatalog.parseModelName('some-random-model-name');
-        expect(result).toEqual({});
+        // No paramsB detected, but defaults should not crash
+        expect(result.paramsB).toBeUndefined();
+        expect(result.category).toBe('general');
     });
 
     test('parseModelName handles lowercase a3b notation', () => {
