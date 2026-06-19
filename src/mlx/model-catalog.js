@@ -214,7 +214,12 @@ class MLXModelCatalog {
                 return { ...m, ...mem };
             })
             .filter(m => m.totalGB <= effectiveMemoryGB)
-            .sort((a, b) => (b.paramsB - a.paramsB) || ((b.downloads || 0) - (a.downloads || 0)))
+            .map(m => {
+                // Add 4D scoring
+                const score = this.scoreModel(m, effectiveMemoryGB, useCase);
+                return { ...m, score: score.total, scoreComponents: score.components, scoreDetail: score };
+            })
+            .sort((a, b) => (b.score - a.score) || (b.paramsB - a.paramsB))
             .slice(0, 50);
     }
 
@@ -292,6 +297,96 @@ class MLXModelCatalog {
         } catch (e) {
             return results.length > 0 ? results : [];
         }
+    }
+
+    // ── 4D Scoring (Quality, Speed, Fit, Context) ──
+    // Matches upstream DETERMINISTIC_WEIGHTS from scoring-config.js
+    static SCORE_WEIGHTS = {
+        coding:    [0.55, 0.20, 0.15, 0.10],
+        reasoning: [0.60, 0.10, 0.20, 0.10],
+        general:   [0.45, 0.35, 0.15, 0.05],
+        chat:      [0.40, 0.40, 0.15, 0.05],
+        creative:  [0.50, 0.25, 0.15, 0.10],
+    };
+
+    // Target context windows per use case (tokens)
+    static TARGET_CONTEXTS = {
+        coding: 8192, reasoning: 16384, general: 4096, chat: 4096, creative: 8192
+    };
+
+    /**
+     * Compute 4D scores for a model given hardware
+     * @returns {{ quality, speed, fit, context, total, components: [Q,S,F,C] }}
+     */
+    scoreModel(model, effectiveMemoryGB, useCase = 'general', bandwidthGBs = 273) {
+        const weights = MLXModelCatalog.SCORE_WEIGHTS[useCase] || MLXModelCatalog.SCORE_WEIGHTS.general;
+        const targetCtx = MLXModelCatalog.TARGET_CONTEXTS[useCase] || 4096;
+
+        // ── Quality (0-100) ──
+        // MoE: quality based on TOTAL params (knowledge), speed/fit based on ACTIVE (compute)
+        const effectiveParams = model.paramsB || 0;
+        const activeParams = model.isMoE ? (model.activeParamsB || model.paramsB * 0.1) : model.paramsB;
+        // Quality uses total params (knowledge), not active. 30B+ total = 100%.
+        // MoE: effectiveParams = total (e.g. 35B), activeParams = per-token (e.g. 3B)
+        const paramsScore = Math.min(100, (effectiveParams / 30) * 100);
+        // Quantization quality penalty
+        const quantMap = { 'BF16': 0, 'MXFP8': 0.5, 'FP16': 0, '8bit': 0.5, 'OptiQ-4bit': 3, '6bit': 2, '5bit': 3, '4bit': 5, 'Q4_K_M': 5, 'Q3_K_M': 8, 'Q2_K': 12 };
+        const quantPenalty = quantMap[model.quantization] || 5;
+        const qatBonus = model.isQAT ? 0.4 : 0;  // 40% less penalty
+        const effectivePenalty = quantPenalty * (1 - qatBonus);
+        // Popularity bonus (downloads)
+        const popBonus = Math.min(10, Math.log10((model.downloads || 1) + 1) * 2);
+        const quality = Math.round(Math.min(100, paramsScore - effectivePenalty + popBonus));
+
+        // ── Speed (0-100) ──
+        // Based on active params vs bandwidth. More params = slower.
+        // On M4 Pro (273 GB/s): 3B active = fast, 10B = good, 30B = slow
+        const tps = bandwidthGBs / (activeParams * 8);  // rough tok/s estimate
+        let speed = 0;
+        if (tps >= 80) speed = 100;
+        else if (tps >= 50) speed = 90;
+        else if (tps >= 30) speed = 75;
+        else if (tps >= 15) speed = 55;
+        else if (tps >= 8) speed = 35;
+        else speed = 20;
+        // Quantization bonus: smaller quant = faster
+        const quantSpeedMap = { 'BF16': 0.6, 'FP16': 0.6, '8bit': 0.8, 'MXFP8': 0.85, '6bit': 0.9, '5bit': 0.95, 'OptiQ-4bit': 1.0, '4bit': 1.0, 'Q4_K_M': 1.0, 'Q3_K_M': 1.1, 'Q2_K': 1.2 };
+        speed = Math.round(Math.min(100, speed * (quantSpeedMap[model.quantization] || 1.0)));
+
+        // ── Fit (0-100) ──
+        // How well the model fills available RAM. 60-80% = ideal.
+        const mem = this.getMemoryEstimate(model.paramsB, model.quantization, 4096);
+        const totalGB = model.isMoE
+            ? this.getMemoryEstimate(model.activeParamsB || model.paramsB * 0.1, model.quantization, 4096).totalGB
+            : mem.totalGB;
+        const usagePct = (totalGB / effectiveMemoryGB) * 100;
+        let fit = 0;
+        if (usagePct >= 50 && usagePct <= 80) fit = 100;         // sweet spot
+        else if (usagePct >= 30 && usagePct < 50) fit = 80;      // underutilized
+        else if (usagePct > 80 && usagePct <= 95) fit = 70;      // tight but works
+        else if (usagePct < 30) fit = 50;                         // way too small
+        else fit = 30;                                             // too big (shouldn't pass filter)
+
+        // ── Context (0-100) ──
+        // Does the model's context window meet the use case requirements?
+        const ctx = model.context || 32768;
+        let context = Math.min(100, Math.round((ctx / targetCtx) * 100));
+        if (context > 100) context = 100;
+        if (ctx >= targetCtx * 2) context = Math.min(100, context + 5);  // bonus for extra large context
+
+        // ── Total (weighted) ──
+        const total = Math.round(
+            weights[0] * quality +
+            weights[1] * speed +
+            weights[2] * fit +
+            weights[3] * context
+        );
+
+        return {
+            quality, speed, fit, context, total,
+            components: [quality, speed, fit, context],
+            tps
+        };
     }
 
     getQualityPenalty(quantization, isQAT = false) {

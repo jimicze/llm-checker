@@ -3315,6 +3315,11 @@ async function displayMlxRecommendations(hardware, useCase) {
                 const marker = i === 0 ? '►' : '•';
                 console.log(`    ${marker} ${m.name}${qatTag}${moeTag}`);
                 console.log(`      RAM: ${m.totalGB}GB | Quant: ${m.quantization} | Context: ${(m.context || 4096).toLocaleString()}`);
+                if (m.score !== undefined) {
+                    const sc = m.scoreComponents;
+                    const scoreColor = m.score >= 80 ? chalk.green : m.score >= 60 ? chalk.yellow : chalk.red;
+                    console.log(`      ${chalk.bold('Score:')} ${scoreColor(`${m.score}/100`)}  [Q:${sc[0]} S:${sc[1]} F:${sc[2]} C:${sc[3]}]`);
+                }
                 // Show all mode options
                 const mlxServerCmd = gen.generateMLXServerCommand(m.hfPath, cat, totalRAM);
                 const omlx = gen.generateOMLXSetupCommand(m.hfPath, cat, { totalRAM });
@@ -4847,6 +4852,11 @@ async function handleMlxAiRun(options) {
                     console.log(`  ${chalk.bold(uc)}: ${best.name}${qatTag}${moeTag} — ~${best.totalGB}GB RAM`);
                     if (best.isQAT) {
                         console.log(`       Quality penalty: ${catalog.getQualityPenalty(best.quantization, true)}% (QAT bonus)`);
+                    }
+                    if (best.score !== undefined) {
+                        const sc = best.scoreComponents;
+                        const scoreColor = best.score >= 80 ? chalk.green : best.score >= 60 ? chalk.yellow : chalk.red;
+                        console.log(`       ${chalk.bold('Score:')} ${scoreColor(`${best.score}/100`)}  [Q:${sc[0]} S:${sc[1]} F:${sc[2]} C:${sc[3]}]`);
                     }
                     // Show run commands for all 3 modes
                     const totalRAM = systemInfo.memory?.total || 48;
