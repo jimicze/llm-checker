@@ -4488,8 +4488,16 @@ program
     .option('-r, --recent', 'Show only recent models (updated in last 30 days)')
     .option('--limit <number>', 'Limit number of results (default: 50)', '50')
     .option('--full', 'Show full details including variants and tags')
+    .option('--runtime <runtime>', 'Runtime engine: auto, ollama, mlx', 'auto')
     .option('--json', 'Output in JSON format')
     .action(async (options) => {
+        const runtime = normalizeRuntime(options.runtime);
+        if (runtime === 'mlx') {
+            // Delegate to installed --runtime mlx
+            options.runtime = 'mlx';
+            await handleMlxInstalled(options);
+            return;
+        }
         if (!options.json) showAsciiArt('list-models');
         const spinner = options.json ? null : ora('📋 Loading models database...').start();
 
@@ -4683,6 +4691,7 @@ program
     .option('-e, --evaluator <model>', 'Evaluator model (auto for best available)', 'auto')
     .option('-w, --weight <number>', 'AI weight (0.0-1.0, default 0.3)', '0.3')
     .option('-m, --models <list>', 'Restrict evaluation to these models (comma-separated)')
+    .option('--runtime <runtime>', 'Runtime engine: auto, ollama, mlx', 'auto')
     .action(async (options) => {
         showAsciiArt('ai-check');
         // Check if Ollama is installed first
