@@ -80,3 +80,4 @@ debug.log
 .tmp-feature-check/
 .tmp-*/
 session-*.md
+mlx-sync-results.json
