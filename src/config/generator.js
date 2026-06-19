@@ -5,6 +5,44 @@
  * commands for optimal inference per use case.
  */
 
+/**
+ * Estimate model size in B from model ref string
+ * e.g. "Qwen2.5-0.5B" → 0.5, "mlx-community/Qwen3-Coder-480B-A35B" → 480
+ */
+function _extractModelSize(modelRef = '') {
+    const str = String(modelRef);
+    // MoE: "480B-A35B" → use total (480), not active (35)
+    const match = str.match(/([\d.]+)B/);
+    return match ? parseFloat(match[1]) : 0;
+}
+
+/**
+ * Adjust config based on model size to prevent hallucination:
+ * - Tiny models (<3B): small ctx, lower temp, less max_tokens
+ * - Medium (3-20B): moderate ctx, normal temp
+ * - Large (>20B): full ctx, normal temp
+ */
+function _scaleConfigForModel(preset, modelSizeB) {
+    const config = { ...preset };
+    if (modelSizeB <= 0) return config;
+
+    if (modelSizeB < 3) {
+        // Tiny models hallucinate easily
+        config.maxTokens = Math.min(config.maxTokens, 1024);
+        config.temperature = Math.min(config.temperature, 0.5);
+        config.topK = Math.min(config.topK || 50, 30);
+        config._ctxWindow = 4096;
+        config._note = 'tiny model — reduced ctx & temp to prevent hallucination';
+    } else if (modelSizeB < 10) {
+        config._ctxWindow = 8192;
+    } else if (modelSizeB < 30) {
+        config._ctxWindow = 32768;
+    } else {
+        config._ctxWindow = 65536;
+    }
+    return config;
+}
+
 const CATEGORY_PRESETS = {
     coding: { temperature: 0.15, topP: 0.1, topK: 40, maxTokens: 4096, repeatPenalty: 1.1, stop: ['</s>', '```'] },
     'code-review': { temperature: 0.1, topP: 0.1, topK: 20, maxTokens: 2048, repeatPenalty: 1.0 },
@@ -22,8 +60,12 @@ class ConfigGenerator {
      * @param {string} useCase - One of: coding, code-review, reasoning, chat, creative, summarization, translation, general
      * @returns {object} Inference parameters
      */
-    getOptimalConfig(useCase = 'general') {
-        return CATEGORY_PRESETS[useCase] || CATEGORY_PRESETS.general;
+    getOptimalConfig(useCase = 'general', modelSizeB = 0) {
+        const preset = CATEGORY_PRESETS[useCase] || CATEGORY_PRESETS.general;
+        if (modelSizeB > 0) {
+            return _scaleConfigForModel(preset, modelSizeB);
+        }
+        return { ...preset };
     }
 
     /**
@@ -114,22 +156,32 @@ class ConfigGenerator {
      *   Experimental: turboquant_kv_cache (2-8bit), dflash, native_mtp, vlm_mtp
      */
     generateOMLXSetupCommand(modelRef, useCase = 'general', options = {}) {
-        const preset = this.getOptimalConfig(useCase);
+        // Model-size-aware config (prevents hallucination on tiny models)
+        const modelSizeB = _extractModelSize(modelRef);
+        const preset = this.getOptimalConfig(useCase, modelSizeB);
         const temp = options.temperature ?? preset.temperature;
         const modelKey = (modelRef.split('/').pop() || modelRef).replace(/[^a-zA-Z0-9_-]/g, '_');
         const totalRAM = options.totalRAM || 48;
         const isReasoning = useCase === 'reasoning';
-        const isCoding = useCase === 'coding';
+
+        // Scale ctx_window by model size:
+        // tiny (<3B): 4K, small (3-10B): 8K, medium (10-30B): 32K, large (>30B): 65K
+        const ctxWindow = preset._ctxWindow || (
+            modelSizeB <= 0 ? (isReasoning ? 32768 : 16384) :
+            modelSizeB < 3 ? 4096 :
+            modelSizeB < 10 ? 8192 :
+            modelSizeB < 30 ? 32768 :
+            65536
+        );
 
         // oMLX per-model config (~/.omlx/model_settings.json)
-        // Matches real oMLX settings format
         const modelConfig = {
             [modelKey]: {
                 // Basic
                 model_alias: modelKey,
                 model_type: 'LLM',
                 reasoning_parser: isReasoning ? 'deepseek_r1' : null,
-                ctx_window: isReasoning ? 131072 : isCoding ? 65536 : 32768,
+                ctx_window: ctxWindow,
                 max_tokens: preset.maxTokens,
 
                 // Sampling
@@ -173,7 +225,7 @@ class ConfigGenerator {
                 temperature: temp,
                 top_p: preset.topP,
                 top_k: preset.topK || 50,
-                ctx_window: isReasoning ? 131072 : isCoding ? 65536 : 32768,
+                ctx_window: ctxWindow,
                 max_tokens: preset.maxTokens,
                 thinking: isReasoning ? `enabled (budget: 8192)` : 'disabled',
                 kv_cache_bits: totalRAM >= 32 ? 8 : totalRAM >= 16 ? 6 : 4,
