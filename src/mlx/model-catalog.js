@@ -117,23 +117,39 @@ class MLXModelCatalog {
         };
     }
 
-    async searchHuggingface(query = 'mlx-community', limit = 20) {
+    async searchHuggingface(query = 'mlx-community', limit = 100) {
+        const fetch = require('../utils/fetch');
+        const results = [];
+        const perPage = Math.min(limit, 100);
+        let page = 0;
+
         try {
-            const url = `${this.hfEndpoint}/models?search=${encodeURIComponent(query)}&sort=downloads&direction=-1&limit=${limit}`;
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000);
-            const response = await fetch(url, { signal: controller.signal });
-            clearTimeout(timeoutId);
-            if (!response.ok) return [];
-            const data = await response.json();
-            return data.map(m => ({
-                hfPath: m.modelId || m.id,
-                name: (m.modelId || m.id).split('/').pop(),
-                downloads: m.downloads || 0,
-                pipeline: m.pipeline_tag || 'text-generation'
-            }));
+            while (results.length < limit) {
+                const url = `${this.hfEndpoint}/models?search=${encodeURIComponent(query)}&sort=downloads&direction=-1&limit=${perPage}&offset=${page * perPage}`;
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) break;
+                const data = await response.json();
+                if (!data || data.length === 0) break;
+
+                const mapped = data.map(m => ({
+                    hfPath: m.modelId || m.id,
+                    name: (m.modelId || m.id).split('/').pop(),
+                    downloads: m.downloads || 0,
+                    pipeline: m.pipeline_tag || 'text-generation'
+                }));
+
+                results.push(...mapped);
+                page++;
+                if (mapped.length < perPage) break; // no more pages
+            }
+
+            return results.slice(0, limit);
         } catch (e) {
-            return [];
+            return results.length > 0 ? results : [];
         }
     }
 

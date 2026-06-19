@@ -3877,7 +3877,7 @@ program
 program
     .command('mlx-sync')
     .description('Sync MLX model catalog from HuggingFace mlx-community')
-    .option('--limit <n>', 'Number of models to fetch (default: 20)', '20')
+    .option('--limit <n>', 'Number of models to fetch (default: 100, max: 500)', '100')
     .option('--save', 'Save synced models to seed catalog file')
     .option('--json', 'Output as JSON')
     .option('--compare', 'Compare with current seed catalog and show differences')
