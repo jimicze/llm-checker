@@ -185,27 +185,49 @@ class MLXClient {
 
     _listLocalModels() {
         const fs = require('fs');
-        try {
-            if (!fs.existsSync(this.modelDir)) return [];
-            const entries = fs.readdirSync(this.modelDir, { withFileTypes: true });
-            const models = [];
-            for (const entry of entries) {
-                if (entry.isDirectory()) {
-                    const configPath = path.join(this.modelDir, entry.name, 'config.json');
-                    if (fs.existsSync(configPath)) {
+        const dirs = [
+            this.modelDir,
+            path.join(os.homedir(), '.cache', 'huggingface', 'hub'),
+        ];
+        const seen = new Set();
+        const models = [];
+
+        for (const baseDir of dirs) {
+            try {
+                if (!fs.existsSync(baseDir)) continue;
+                const entries = fs.readdirSync(baseDir, { withFileTypes: true });
+                for (const entry of entries) {
+                    if (!entry.isDirectory()) continue;
+                    // HF hub uses "models--org--name" format
+                    const hfMatch = entry.name.match(/^models--(.+)--(.+)$/);
+                    let modelName = null;
+                    let configPath = null;
+                    if (hfMatch) {
+                        modelName = `${hfMatch[1]}/${hfMatch[2]}`;
+                        const snapDir = path.join(baseDir, entry.name, 'snapshots');
+                        if (fs.existsSync(snapDir)) {
+                            const snaps = fs.readdirSync(snapDir);
+                            if (snaps.length > 0) {
+                                configPath = path.join(snapDir, snaps[0], 'config.json');
+                            }
+                        }
+                    } else {
+                        modelName = entry.name;
+                        configPath = path.join(baseDir, entry.name, 'config.json');
+                    }
+                    if (modelName && !seen.has(modelName) && configPath && fs.existsSync(configPath)) {
+                        seen.add(modelName);
                         models.push({
-                            name: entry.name,
-                            displayName: entry.name,
-                            source: 'mlx_local',
-                            path: path.join(this.modelDir, entry.name)
+                            name: modelName,
+                            displayName: modelName,
+                            source: hfMatch ? 'huggingface_cache' : 'mlx_local',
+                            path: path.dirname(configPath)
                         });
                     }
                 }
-            }
-            return models;
-        } catch (e) {
-            return [];
+            } catch (e) { /* skip unreadable dirs */ }
         }
+        return models;
     }
 
     async generate(modelName, prompt, options = {}) {
