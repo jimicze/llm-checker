@@ -2,6 +2,20 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+## Task Progress
+
+- [x] Task 0: Fork & repo setup
+- [x] Task 1: Create src/mlx/client.js — MLX execution client
+- [x] Task 2: Enhance Apple Silicon detection with MLX check
+- [x] Task 3: Add --runtime CLI flag and MLX dispatch
+- [x] Task 4: Create src/config/generator.js — config generator
+- [x] Task 5: Create src/mlx/model-catalog.js — MLX model catalog
+- [x] Task 6: Wire everything into LLMChecker class
+- [x] Task 7: Add MLX MCP tools
+- [x] Task 8: Integration tests
+- [x] Task 9: Documentation & PR preparation
+- [ ] Task 10: Final verification & push
+
 **Goal:** Extend llm-checker with MLX backend support — hardware detection, model discovery, configuration generation, and execution via oMLX API and direct mlx-lm subprocess.
 
 **Architecture:** Add `src/mlx/client.js` (MLX execution client with oMLX API + direct modes), `src/mlx/model-catalog.js` (HuggingFace MLX Community model discovery), `src/config/generator.js` (per-engine config generation). Enhance Apple Silicon detector with MLX availability check. Add `--runtime` CLI flag dispatching between Ollama and MLX backends. All new code is optional — graceful fallback if MLX not installed.

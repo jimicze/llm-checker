@@ -3855,6 +3855,7 @@ program
         '--calibrated [file]',
         'Use calibrated routing policy (optional file path; defaults to ~/.llm-checker/calibration-policy.{yaml,yml,json})'
     )
+    .option('--runtime <runtime>', 'Runtime engine: ollama (default), mlx', 'ollama')
     .addHelpText(
         'after',
         `
@@ -4447,6 +4448,151 @@ program
         }
     });
 
+async function handleMlxAiRun(options) {
+    const MLXClient = require('../src/mlx/client');
+    const mlxClient = new MLXClient({
+        mode: process.env.MLX_MODE || 'omlx'
+    });
+
+    const availability = await mlxClient.checkAvailability();
+    if (!availability.available) {
+        console.log(chalk.red('\nMLX not available:'));
+        console.log(chalk.yellow(`  ${availability.error}`));
+        if (availability.hint) {
+            console.log(chalk.cyan(`  ${availability.hint}`));
+        }
+        console.log(chalk.gray('\n  Or switch to Ollama: llm-checker ai-run --runtime ollama'));
+        return;
+    }
+
+    if (options.referenceOnly) {
+        console.log(chalk.green('\nMLX Backend Available:'));
+        console.log(`  Mode: ${mlxClient.mode}`);
+        console.log(`  Server: ${mlxClient.baseURL}`);
+
+        const checker = new (getLLMChecker())();
+        const systemInfo = await checker.getSystemInfo();
+        console.log(chalk.cyan('\nSystem Info:'));
+        console.log(`  Platform: ${systemInfo.os?.platform || process.platform}`);
+        console.log(`  CPU: ${systemInfo.cpu?.brand || 'Unknown'}`);
+        console.log(`  RAM: ${systemInfo.memory?.total || 0}GB`);
+
+        // Show MLX model catalog recommendations
+        try {
+            const MLXModelCatalog = require('../src/mlx/model-catalog');
+            const AppleSiliconDetector = require('../src/hardware/backends/apple-silicon');
+            const detector = new AppleSiliconDetector();
+            const mlxInfo = detector.mlxInfo();
+            if (mlxInfo.available) {
+                console.log(chalk.cyan('\nMLX-Optimized Hardware:'));
+                console.log(`  Chip: ${mlxInfo.chip}`);
+                console.log(`  Memory: ${mlxInfo.memoryGB}GB unified`);
+                console.log(`  Effective for models: ~${detector.getEffectiveMemoryForMLX()}GB`);
+                console.log(`  Memory Bandwidth: ${mlxInfo.memoryBandwidthGBs} GB/s`);
+            }
+
+            const catalog = new MLXModelCatalog();
+            const effectiveMem = detector.getEffectiveMemoryForMLX() || Math.round((systemInfo.memory?.total || 8) * 0.5);
+            console.log(chalk.cyan('\nRecommended MLX Models:'));
+            const useCase = options.category || 'general';
+            const suggestions = catalog.getModelByHardware(effectiveMem, useCase);
+            suggestions.slice(0, 5).forEach(m => {
+                const moeTag = m.isMoE ? ` (MoE, ${m.activeParamsB}B active)` : '';
+                console.log(`  • ${m.name}${moeTag} — ~${m.totalGB}GB RAM`);
+            });
+        } catch (e) {
+            // Catalog display is optional
+        }
+
+        console.log(chalk.gray('\n  Run with --prompt or interactively to execute.'));
+        return;
+    }
+
+    // Show available MLX models
+    const models = await mlxClient.listModels();
+    const candidateModels = options.models || models.map(m => m.name);
+
+    if (models.length === 0 && !options.models) {
+        console.log(chalk.yellow('\nNo MLX models found locally.'));
+        console.log(chalk.gray('  Download models from HuggingFace mlx-community:'));
+        console.log(chalk.cyan('  https://huggingface.co/mlx-community'));
+        console.log(chalk.gray('  Or use oMLX admin panel to download models.'));
+        console.log(chalk.gray('\n  Specify a model with --models <hf-model-id>'));
+    }
+
+    if (candidateModels.length === 0) {
+        console.log(chalk.yellow('\nNo models specified.'));
+        console.log(chalk.gray('  Use --models <hf-model-id> to specify a model.'));
+        console.log(chalk.gray('  Example: --models mlx-community/Qwen3.5-4B-OptiQ-4bit'));
+        return;
+    }
+
+    if (options.prompt) {
+        console.log(chalk.cyan(`\n>>> ${options.prompt}`));
+        const modelName = candidateModels[0];
+        try {
+            const ConfigGenerator = require('../src/config/generator');
+            const gen = new ConfigGenerator();
+            const genOpts = gen.getOptimalConfig(options.category || 'general');
+            const result = await mlxClient.generate(modelName, options.prompt, {
+                generationOptions: {
+                    temperature: genOpts.temperature,
+                    top_p: genOpts.topP,
+                    max_tokens: genOpts.maxTokens
+                }
+            });
+            console.log(chalk.white('\n' + result.response));
+            console.log(chalk.gray(`\n[${result.tokensPerSecond} tok/s, ${result.responseTime}ms]`));
+        } catch (error) {
+            console.error(chalk.red('\nMLX execution failed:'), error.message);
+        }
+        return;
+    }
+
+    // Interactive mode
+    console.log(chalk.magenta.bold(`\nStarting MLX interactive session with ${candidateModels[0]}...`));
+    console.log(chalk.gray(`Tip: Type ${chalk.cyan('/bye')} to exit\n`));
+
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+        prompt: chalk.green('mlx> ')
+    });
+    rl.prompt();
+
+    rl.on('line', async (line) => {
+        const trimmed = line.trim();
+        if (trimmed.toLowerCase() === '/bye' || trimmed.toLowerCase() === '/exit') {
+            rl.close();
+            return;
+        }
+        if (!trimmed) { rl.prompt(); return; }
+
+        try {
+            const ConfigGenerator = require('../src/config/generator');
+            const gen = new ConfigGenerator();
+            const genOpts = gen.getOptimalConfig(options.category || 'general');
+            const result = await mlxClient.generate(candidateModels[0], trimmed, {
+                generationOptions: {
+                    temperature: genOpts.temperature,
+                    top_p: genOpts.topP,
+                    max_tokens: genOpts.maxTokens
+                }
+            });
+            console.log(chalk.white(result.response));
+            console.log(chalk.gray(`[${result.tokensPerSecond} tok/s]`));
+        } catch (error) {
+            console.error(chalk.red('Error:'), error.message);
+        }
+        rl.prompt();
+    });
+
+    rl.on('close', () => {
+        console.log(chalk.gray('\nMLX session ended.'));
+        process.exit(0);
+    });
+}
+
 program
     .command('ai-run')
     .description('AI-powered model selection and execution')
@@ -4460,8 +4606,16 @@ program
     )
     .option('--benchmark', 'Run a short local speed test before launching')
     .option('--reference-only', 'Show model choice and speed reference without launching Ollama')
+    .option('--runtime <runtime>', 'Runtime engine: ollama (default), mlx', 'ollama')
     .action(async (options) => {
         showAsciiArt('ai-run');
+
+        const runtime = normalizeRuntime(options.runtime || 'ollama');
+        if (runtime === 'mlx') {
+            await handleMlxAiRun(options);
+            return;
+        }
+
         // Check if Ollama is installed first
         await checkOllamaAndExit();
         

@@ -22,10 +22,12 @@ import { dirname, join } from "path";
 import { readdir, stat } from "fs/promises";
 import http from "http";
 import os from "os";
+import { createRequire } from "module";
 
 const exec = promisify(execFile);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const requireMlx = createRequire(import.meta.url);
 
 const CLI_PATH = join(__dirname, "enhanced_cli.js");
 const OLLAMA_HOST = process.env.OLLAMA_HOST || "http://localhost:11434";
@@ -1356,6 +1358,90 @@ server.tool(
       return { content: [{ type: "text", text: lines.join("\n") }] };
     } catch (err) {
       return { content: [{ type: "text", text: `Monitor failed: ${err.message}` }], isError: true };
+    }
+  }
+);
+
+// ============================================================================
+// MLX TOOLS
+// ============================================================================
+
+const { MLXClient } = requireMlx("../src/mlx/client");
+const ConfigGenerator = requireMlx("../src/config/generator");
+
+server.tool(
+  "mlx_list_models",
+  {
+    mode: z.enum(["omlx", "direct"]).optional().describe("MLX client mode"),
+  },
+  async ({ mode }) => {
+    try {
+      const client = new MLXClient({ mode: mode || "omlx" });
+      const models = await client.listModels();
+      if (models.length === 0) {
+        return { content: [{ type: "text", text: "No MLX models found. Use oMLX admin or huggingface-cli to download models." }] };
+      }
+      const summary = models.map(m => `- ${m.name} (${m.source})`).join("\n");
+      return { content: [{ type: "text", text: `**MLX Models Available:**\n${summary}` }] };
+    } catch (err) {
+      return { content: [{ type: "text", text: `MLX error: ${err.message}` }] };
+    }
+  }
+);
+
+server.tool(
+  "mlx_generate",
+  {
+    model: z.string().describe("MLX model name/path"),
+    prompt: z.string().describe("Input prompt"),
+    mode: z.enum(["omlx", "direct"]).optional().describe("MLX client mode"),
+    temperature: z.number().min(0).max(2).optional().describe("Sampling temperature"),
+    max_tokens: z.number().int().positive().optional().describe("Max tokens to generate"),
+  },
+  async ({ model, prompt, mode, temperature, max_tokens }) => {
+    try {
+      const client = new MLXClient({ mode: mode || "omlx" });
+      const result = await client.generate(model, prompt, {
+        generationOptions: {
+          temperature: temperature ?? 0.7,
+          max_tokens: max_tokens ?? 2048,
+        }
+      });
+      return {
+        content: [
+          { type: "text", text: result.response },
+          { type: "text", text: `\n\n_[${result.tokensPerSecond} tok/s, ${result.responseTime}ms]_` }
+        ]
+      };
+    } catch (err) {
+      return { content: [{ type: "text", text: `MLX generation failed: ${err.message}` }] };
+    }
+  }
+);
+
+server.tool(
+  "mlx_optimize",
+  {
+    use_case: z.string().describe("Use case: coding, reasoning, chat, creative, general"),
+    hf_model_id: z.string().optional().describe("HuggingFace model ID (optional)"),
+  },
+  async ({ use_case, hf_model_id }) => {
+    try {
+      const gen = new ConfigGenerator();
+      const config = gen.getOptimalConfig(use_case);
+
+      let output = `**Optimal config for ${use_case}:**\n\`\`\`json\n${JSON.stringify(config, null, 2)}\n\`\`\``;
+
+      if (hf_model_id) {
+        const runCmd = gen.generateMLXRunCommand(hf_model_id, use_case);
+        const omlxSettings = gen.generateOMLXSettings({ name: hf_model_id }, use_case);
+        output += `\n\n**Run command:**\n\`\`\`bash\n${runCmd}\n\`\`\``;
+        output += `\n\n**oMLX settings snippet:**\n\`\`\`json\n${JSON.stringify(omlxSettings, null, 2)}\n\`\`\``;
+      }
+
+      return { content: [{ type: "text", text: output }] };
+    } catch (err) {
+      return { content: [{ type: "text", text: `Optimization failed: ${err.message}` }] };
     }
   }
 );

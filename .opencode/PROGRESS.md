@@ -41,7 +41,7 @@
 
 ### Phase 2: Model Discovery
 - [ ] Task 4: Create `src/config/generator.js` — config generator
-- [ ] Task 5: Create `src/mlx/model-catalog.js` — MLX model catalog
+- [x] Task 5: Create `src/mlx/model-catalog.js` — MLX model catalog
 
 ### Phase 3: Integration
 - [ ] Task 6: Wire everything into LLMChecker class

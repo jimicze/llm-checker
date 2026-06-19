@@ -44,6 +44,20 @@ Choosing the right LLM for your hardware is complex. With thousands of model var
 | **Calibrated** | Memory Estimation | Bytes-per-parameter formula validated against real Ollama sizes |
 | **Zero** | Native Dependencies | Pure JavaScript &mdash; works on any Node.js 16+ system |
 | **Live** | AI Run Metrics | `ai-run` shows response speed in tokens/sec next to model output |
+| **MLX** | Apple Silicon Backend | Run models via MLX on Apple Silicon, config generation, curated model catalog |
+
+---
+
+## MLX Backend (Apple Silicon)
+
+llm-checker now supports running models via MLX on Apple Silicon Macs,
+in addition to the default Ollama backend. Use the `--runtime mlx` flag:
+
+```bash
+llm-checker ai-run --runtime mlx --prompt "Hello"
+```
+
+See [MLX Guide](docs/guides/mlx-guide.md) for complete documentation.
 
 ---
 

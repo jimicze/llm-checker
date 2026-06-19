@@ -142,6 +142,12 @@ class AppleSiliconDetector {
         result.speedCoefficient = this.calculateSpeedCoefficient(result);
         result.memory.bandwidth = this.estimateMemoryBandwidth(result.variant, result.generation);
 
+        // MLX availability
+        result.mlx = {
+            available: false,
+            effectiveMemoryGB: 0
+        };
+
         return result;
     }
 
@@ -277,6 +283,56 @@ class AppleSiliconDetector {
     }
 
     /**
+     * Check if MLX framework is available (mlx-lm package installed)
+     */
+    mlxAvailable() {
+        try {
+            require.resolve('mlx-lm');
+            return true;
+        } catch (e) {
+            try {
+                require.resolve('mlx');
+                return true;
+            } catch (e2) {
+                return false;
+            }
+        }
+    }
+
+    /**
+     * Get MLX-specific hardware info
+     */
+    mlxInfo() {
+        const info = this.detect();
+        if (!info) {
+            return { available: false, reason: 'Not Apple Silicon' };
+        }
+        const mlxInstalled = this.mlxAvailable();
+        return {
+            available: mlxInstalled,
+            chip: info.chip,
+            generation: info.generation,
+            variant: info.variant,
+            memoryGB: info.memory.unified,
+            gpuCores: info.gpu.cores,
+            memoryBandwidthGBs: info.memory.bandwidth,
+            speedCoefficient: info.speedCoefficient
+        };
+    }
+
+    /**
+     * Calculate effective memory available for MLX model loading
+     * Apple Silicon unified memory: ~60% of total RAM usable for models
+     * (OS reserves ~4GB, rest is shared between CPU and GPU)
+     */
+    getEffectiveMemoryForMLX() {
+        const info = this.detect();
+        if (!info) return 0;
+        const usable = Math.max(0, info.memory.unified - 4);
+        return Math.round(usable * 0.6);
+    }
+
+    /**
      * Get hardware fingerprint for benchmarks
      */
     getFingerprint() {
@@ -293,7 +349,7 @@ class AppleSiliconDetector {
     /**
      * Estimate inference speed for a model size
      */
-    estimateTokensPerSecond(paramsB, quantization = 'Q4_K_M') {
+    estimateTokensPerSecond(paramsB, quantization = 'Q4_K_M', runtime = 'ollama') {
         const info = this.detect();
         if (!info) return 0;
 
@@ -309,11 +365,19 @@ class AppleSiliconDetector {
             'Q3_K_M': 3.0,
             'Q2_K': 3.5,
             'IQ4_XS': 2.6,
-            'IQ3_XXS': 3.2
+            'IQ3_XXS': 3.2,
+            '4bit': 2.5,
+            '8bit': 1.5,
+            'fp16': 1.0
         };
 
         const mult = quantMult[quantization] || 2.0;
-        const baseSpeed = info.speedCoefficient / paramsB * mult;
+        let baseSpeed = info.speedCoefficient / paramsB * mult;
+
+        // MLX is typically 1.2x-1.5x faster than llama.cpp Metal on Apple Silicon
+        if (runtime === 'mlx') {
+            baseSpeed *= 1.35;
+        }
 
         return Math.round(baseSpeed);
     }

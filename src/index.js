@@ -5,6 +5,8 @@ const DeterministicModelSelector = require('./models/deterministic-selector');
 const CompatibilityAnalyzer = require(path.join(__dirname, '..', 'analyzer', 'compatibility'));
 const PerformanceAnalyzer = require(path.join(__dirname, '..', 'analyzer', 'performance'));
 const OllamaClient = require('./ollama/client');
+const MLXClient = require('./mlx/client');
+const ConfigGenerator = require('./config/generator');
 const { getLogger } = require('./utils/logger');
 const { getOllamaModelsIntegration, OllamaNativeScraper } = require('./ollama/native-scraper');
 const VerboseProgress = require('./utils/verbose-progress');
@@ -30,6 +32,8 @@ class LLMChecker {
         this.performanceAnalyzer = new PerformanceAnalyzer();
         this.speculativeDecodingEstimator = new SpeculativeDecodingEstimator();
         this.ollamaClient = new OllamaClient();
+        this.mlxClient = new MLXClient();
+        this.configGenerator = new ConfigGenerator();
         this.logger = getLogger().createChild('LLMChecker');
         this.verbose = options.verbose !== false; // Default to verbose unless explicitly disabled
         this.progress = null; // Will be initialized when needed
@@ -1144,6 +1148,57 @@ class LLMChecker {
         }
 
         return recommendations.sort((a, b) => b.priority - a.priority);
+    }
+
+    async generateMlxRecommendations(hardware) {
+        const AppleSiliconDetector = require('./hardware/backends/apple-silicon');
+        const detector = new AppleSiliconDetector();
+        const mlxInfo = detector.mlxInfo();
+        const MLXModelCatalog = require('./mlx/model-catalog');
+        const catalog = new MLXModelCatalog();
+
+        if (!mlxInfo.available) {
+            return { available: false, reason: 'MLX framework not available on this system' };
+        }
+
+        const effectiveMemory = detector.getEffectiveMemoryForMLX();
+        const codingModels = catalog.getModelByHardware(effectiveMemory, 'coding');
+        const reasoningModels = catalog.getModelByHardware(effectiveMemory, 'reasoning');
+        const generalModels = catalog.getModelByHardware(effectiveMemory, 'general');
+
+        return {
+            available: true,
+            chip: mlxInfo.chip,
+            effectiveMemoryGB: effectiveMemory,
+            recommendations: {
+                coding: codingModels.map(m => ({
+                    name: m.name,
+                    hfPath: m.hfPath,
+                    paramsB: m.paramsB,
+                    totalGB: m.totalGB,
+                    isMoE: m.isMoE,
+                    activeParamsB: m.activeParamsB,
+                    config: this.configGenerator.getOptimalConfig('coding'),
+                    runCommand: this.configGenerator.generateMLXRunCommand(m.hfPath, 'coding')
+                })),
+                reasoning: reasoningModels.map(m => ({
+                    name: m.name,
+                    hfPath: m.hfPath,
+                    paramsB: m.paramsB,
+                    totalGB: m.totalGB,
+                    config: this.configGenerator.getOptimalConfig('reasoning'),
+                    runCommand: this.configGenerator.generateMLXRunCommand(m.hfPath, 'reasoning')
+                })),
+                general: generalModels.map(m => ({
+                    name: m.name,
+                    hfPath: m.hfPath,
+                    paramsB: m.paramsB,
+                    totalGB: m.totalGB,
+                    config: this.configGenerator.getOptimalConfig('general'),
+                    runCommand: this.configGenerator.generateMLXRunCommand(m.hfPath, 'general')
+                }))
+            }
+        };
     }
 
     async enrichWithPerformanceData(hardware, compatibility) {
@@ -2463,6 +2518,14 @@ class LLMChecker {
         return this.ollamaScraper.scrapeAllModels(false);
     }
 
+
+    getConfigGenerator() {
+        return this.configGenerator;
+    }
+
+    getMlxClient() {
+        return this.mlxClient;
+    }
 
     async generateIntelligentRecommendations(hardware, options = {}) {
         try {
