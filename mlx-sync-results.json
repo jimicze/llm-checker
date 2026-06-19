@@ -1,0 +1,1202 @@
+[
+  {
+    "hfPath": "mlx-community/parakeet-tdt-0.6b-v3",
+    "name": "parakeet-tdt-0.6b-v3",
+    "downloads": 1242839,
+    "pipeline": "automatic-speech-recognition"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-E4B-it-MLX-4bit",
+    "name": "gemma-4-E4B-it-MLX-4bit",
+    "downloads": 1026402,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-E4B-it-MLX-8bit",
+    "name": "gemma-4-E4B-it-MLX-8bit",
+    "downloads": 1001041,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-E4B-it-MLX-6bit",
+    "name": "gemma-4-E4B-it-MLX-6bit",
+    "downloads": 983466,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-E4B-it-MLX-5bit",
+    "name": "gemma-4-E4B-it-MLX-5bit",
+    "downloads": 982472,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "mlx-community/parakeet-tdt-0.6b-v2",
+    "name": "parakeet-tdt-0.6b-v2",
+    "downloads": 785591,
+    "pipeline": "automatic-speech-recognition"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3.6-27B-MLX-4bit",
+    "name": "Qwen3.6-27B-MLX-4bit",
+    "downloads": 710912,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-26B-A4B-it-QAT-MLX-4bit",
+    "name": "gemma-4-26B-A4B-it-QAT-MLX-4bit",
+    "downloads": 674633,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3.6-27B-MLX-8bit",
+    "name": "Qwen3.6-27B-MLX-8bit",
+    "downloads": 673550,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3.6-27B-MLX-6bit",
+    "name": "Qwen3.6-27B-MLX-6bit",
+    "downloads": 625955,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3.6-27B-MLX-5bit",
+    "name": "Qwen3.6-27B-MLX-5bit",
+    "downloads": 624191,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3.5-9B-MLX-4bit",
+    "name": "Qwen3.5-9B-MLX-4bit",
+    "downloads": 442603,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3.6-35B-A3B-MLX-8bit",
+    "name": "Qwen3.6-35B-A3B-MLX-8bit",
+    "downloads": 399587,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3.6-35B-A3B-MLX-4bit",
+    "name": "Qwen3.6-35B-A3B-MLX-4bit",
+    "downloads": 397192,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "mlx-community/gpt-oss-20b-MXFP4-Q8",
+    "name": "gpt-oss-20b-MXFP4-Q8",
+    "downloads": 395159,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3.5-9B-MLX-8bit",
+    "name": "Qwen3.5-9B-MLX-8bit",
+    "downloads": 384759,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3.6-35B-A3B-MLX-6bit",
+    "name": "Qwen3.6-35B-A3B-MLX-6bit",
+    "downloads": 377697,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/DeepSeek-R1-0528-Qwen3-8B-MLX-4bit",
+    "name": "DeepSeek-R1-0528-Qwen3-8B-MLX-4bit",
+    "downloads": 363423,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/DeepSeek-R1-0528-Qwen3-8B-MLX-8bit",
+    "name": "DeepSeek-R1-0528-Qwen3-8B-MLX-8bit",
+    "downloads": 330476,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/Kimi-K2.5",
+    "name": "Kimi-K2.5",
+    "downloads": 251869,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-Coder-Next-MLX-8bit",
+    "name": "Qwen3-Coder-Next-MLX-8bit",
+    "downloads": 231135,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/parakeet-tdt_ctc-110m",
+    "name": "parakeet-tdt_ctc-110m",
+    "downloads": 228531,
+    "pipeline": "automatic-speech-recognition"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-26B-A4B-it-MLX-4bit",
+    "name": "gemma-4-26B-A4B-it-MLX-4bit",
+    "downloads": 219324,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/LFM2-24B-A2B-MLX-4bit",
+    "name": "LFM2-24B-A2B-MLX-4bit",
+    "downloads": 205176,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-Coder-Next-MLX-4bit",
+    "name": "Qwen3-Coder-Next-MLX-4bit",
+    "downloads": 204615,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/LFM2-24B-A2B-MLX-8bit",
+    "name": "LFM2-24B-A2B-MLX-8bit",
+    "downloads": 202419,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/LFM2-24B-A2B-MLX-6bit",
+    "name": "LFM2-24B-A2B-MLX-6bit",
+    "downloads": 201878,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/LFM2-24B-A2B-MLX-5bit",
+    "name": "LFM2-24B-A2B-MLX-5bit",
+    "downloads": 201864,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/GLM-4.7-Flash-MLX-8bit",
+    "name": "GLM-4.7-Flash-MLX-8bit",
+    "downloads": 201341,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-Coder-30B-A3B-Instruct-MLX-4bit",
+    "name": "Qwen3-Coder-30B-A3B-Instruct-MLX-4bit",
+    "downloads": 190467,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/GLM-4.7-Flash-MLX-6bit",
+    "name": "GLM-4.7-Flash-MLX-6bit",
+    "downloads": 188687,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-Coder-Next-MLX-6bit",
+    "name": "Qwen3-Coder-Next-MLX-6bit",
+    "downloads": 184538,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/Devstral-Small-2505-4bit",
+    "name": "Devstral-Small-2505-4bit",
+    "downloads": 167968,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-Coder-30B-A3B-Instruct-MLX-8bit",
+    "name": "Qwen3-Coder-30B-A3B-Instruct-MLX-8bit",
+    "downloads": 167111,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-Coder-30B-A3B-Instruct-MLX-5bit",
+    "name": "Qwen3-Coder-30B-A3B-Instruct-MLX-5bit",
+    "downloads": 165130,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-E2B-it-MLX-4bit",
+    "name": "gemma-4-E2B-it-MLX-4bit",
+    "downloads": 164286,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-26B-A4B-it-MLX-8bit",
+    "name": "gemma-4-26B-A4B-it-MLX-8bit",
+    "downloads": 163021,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-Coder-30B-A3B-Instruct-MLX-6bit",
+    "name": "Qwen3-Coder-30B-A3B-Instruct-MLX-6bit",
+    "downloads": 161682,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/whisper-large-v3-mlx",
+    "name": "whisper-large-v3-mlx",
+    "downloads": 160865,
+    "pipeline": "automatic-speech-recognition"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen2.5-Coder-14B-Instruct-MLX-4bit",
+    "name": "Qwen2.5-Coder-14B-Instruct-MLX-4bit",
+    "downloads": 158315,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-E2B-it-MLX-8bit",
+    "name": "gemma-4-E2B-it-MLX-8bit",
+    "downloads": 155486,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-E2B-it-MLX-6bit",
+    "name": "gemma-4-E2B-it-MLX-6bit",
+    "downloads": 153897,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-E2B-it-MLX-5bit",
+    "name": "gemma-4-E2B-it-MLX-5bit",
+    "downloads": 153772,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-26B-A4B-it-MLX-6bit",
+    "name": "gemma-4-26B-A4B-it-MLX-6bit",
+    "downloads": 148562,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-26B-A4B-it-MLX-5bit",
+    "name": "gemma-4-26B-A4B-it-MLX-5bit",
+    "downloads": 146409,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "mlx-community/nomicai-modernbert-embed-base-bf16",
+    "name": "nomicai-modernbert-embed-base-bf16",
+    "downloads": 146062,
+    "pipeline": "sentence-similarity"
+  },
+  {
+    "hfPath": "mlx-community/Qwen2.5-14B-Instruct-4bit",
+    "name": "Qwen2.5-14B-Instruct-4bit",
+    "downloads": 145491,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/Devstral-Small-2-24B-Instruct-2512-4bit",
+    "name": "Devstral-Small-2-24B-Instruct-2512-4bit",
+    "downloads": 140066,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-VL-4B-Instruct-MLX-4bit",
+    "name": "Qwen3-VL-4B-Instruct-MLX-4bit",
+    "downloads": 129439,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-VL-4B-Instruct-MLX-8bit",
+    "name": "Qwen3-VL-4B-Instruct-MLX-8bit",
+    "downloads": 125521,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen2.5-Coder-14B-Instruct-MLX-8bit",
+    "name": "Qwen2.5-Coder-14B-Instruct-MLX-8bit",
+    "downloads": 124882,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-VL-4B-Instruct-MLX-6bit",
+    "name": "Qwen3-VL-4B-Instruct-MLX-6bit",
+    "downloads": 124865,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-VL-4B-Instruct-MLX-5bit",
+    "name": "Qwen3-VL-4B-Instruct-MLX-5bit",
+    "downloads": 124774,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/LFM2.5-1.2B-Instruct-MLX-8bit",
+    "name": "LFM2.5-1.2B-Instruct-MLX-8bit",
+    "downloads": 107944,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/LFM2.5-1.2B-Instruct-MLX-4bit",
+    "name": "LFM2.5-1.2B-Instruct-MLX-4bit",
+    "downloads": 105611,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/LFM2.5-1.2B-Instruct-MLX-6bit",
+    "name": "LFM2.5-1.2B-Instruct-MLX-6bit",
+    "downloads": 105338,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/gemma-3-4b-it-qat-4bit",
+    "name": "gemma-3-4b-it-qat-4bit",
+    "downloads": 104857,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/GLM-4.6V-Flash-MLX-4bit",
+    "name": "GLM-4.6V-Flash-MLX-4bit",
+    "downloads": 103529,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/GLM-4.6V-Flash-MLX-8bit",
+    "name": "GLM-4.6V-Flash-MLX-8bit",
+    "downloads": 102138,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/GLM-4.6V-Flash-MLX-6bit",
+    "name": "GLM-4.6V-Flash-MLX-6bit",
+    "downloads": 101208,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "mlx-community/Kimi-K2.6-mlx-DQ3_K_M-q8",
+    "name": "Kimi-K2.6-mlx-DQ3_K_M-q8",
+    "downloads": 100468,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-VL-8B-Instruct-MLX-4bit",
+    "name": "Qwen3-VL-8B-Instruct-MLX-4bit",
+    "downloads": 99497,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "mlx-community/Qwen3.6-35B-A3B-4bit",
+    "name": "Qwen3.6-35B-A3B-4bit",
+    "downloads": 94531,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-VL-8B-Instruct-MLX-8bit",
+    "name": "Qwen3-VL-8B-Instruct-MLX-8bit",
+    "downloads": 92737,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-VL-8B-Instruct-MLX-5bit",
+    "name": "Qwen3-VL-8B-Instruct-MLX-5bit",
+    "downloads": 91388,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-VL-8B-Instruct-MLX-6bit",
+    "name": "Qwen3-VL-8B-Instruct-MLX-6bit",
+    "downloads": 91273,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "mlx-community/gemma-3-12b-it-qat-4bit",
+    "name": "gemma-3-12b-it-qat-4bit",
+    "downloads": 87120,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Hermes-4-70B-MLX-4bit",
+    "name": "Hermes-4-70B-MLX-4bit",
+    "downloads": 85505,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/DeepSeek-R1-Distill-Qwen-14B-4bit",
+    "name": "DeepSeek-R1-Distill-Qwen-14B-4bit",
+    "downloads": 79447,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-31B-it-MLX-8bit",
+    "name": "gemma-4-31B-it-MLX-8bit",
+    "downloads": 78724,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Hermes-4-70B-MLX-8bit",
+    "name": "Hermes-4-70B-MLX-8bit",
+    "downloads": 78060,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Hermes-4-70B-MLX-6bit",
+    "name": "Hermes-4-70B-MLX-6bit",
+    "downloads": 77377,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Hermes-4-70B-MLX-5bit",
+    "name": "Hermes-4-70B-MLX-5bit",
+    "downloads": 76995,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/gemma-4-e2b-it-4bit",
+    "name": "gemma-4-e2b-it-4bit",
+    "downloads": 76738,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-3n-E4B-it-MLX-4bit",
+    "name": "gemma-3n-E4B-it-MLX-4bit",
+    "downloads": 71867,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-3n-E4B-it-MLX-bf16",
+    "name": "gemma-3n-E4B-it-MLX-bf16",
+    "downloads": 71708,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/NVIDIA-Nemotron-3-Nano-30B-A3B-MLX-4bit",
+    "name": "NVIDIA-Nemotron-3-Nano-30B-A3B-MLX-4bit",
+    "downloads": 70201,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-3n-E4B-it-MLX-8bit",
+    "name": "gemma-3n-E4B-it-MLX-8bit",
+    "downloads": 69855,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-3n-E4B-it-MLX-6bit",
+    "name": "gemma-3n-E4B-it-MLX-6bit",
+    "downloads": 69464,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "mlx-community/gemma-4-12B-it-8bit",
+    "name": "gemma-4-12B-it-8bit",
+    "downloads": 63560,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/NVIDIA-Nemotron-3-Nano-30B-A3B-MLX-8bit",
+    "name": "NVIDIA-Nemotron-3-Nano-30B-A3B-MLX-8bit",
+    "downloads": 63130,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+    "name": "Llama-3.2-1B-Instruct-4bit",
+    "downloads": 62327,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/NVIDIA-Nemotron-3-Nano-30B-A3B-MLX-6bit",
+    "name": "NVIDIA-Nemotron-3-Nano-30B-A3B-MLX-6bit",
+    "downloads": 62149,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-31B-it-MLX-4bit",
+    "name": "gemma-4-31B-it-MLX-4bit",
+    "downloads": 61830,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/NVIDIA-Nemotron-3-Nano-30B-A3B-MLX-5bit",
+    "name": "NVIDIA-Nemotron-3-Nano-30B-A3B-MLX-5bit",
+    "downloads": 61824,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-4B-Instruct-2507-MLX-4bit",
+    "name": "Qwen3-4B-Instruct-2507-MLX-4bit",
+    "downloads": 58481,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Phi-4-mini-reasoning-MLX-4bit",
+    "name": "Phi-4-mini-reasoning-MLX-4bit",
+    "downloads": 57096,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-31B-it-MLX-6bit",
+    "name": "gemma-4-31B-it-MLX-6bit",
+    "downloads": 55845,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-4B-Thinking-2507-MLX-4bit",
+    "name": "Qwen3-4B-Thinking-2507-MLX-4bit",
+    "downloads": 55604,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/whisper-base-mlx",
+    "name": "whisper-base-mlx",
+    "downloads": 54826,
+    "pipeline": "automatic-speech-recognition"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-4B-Instruct-2507-MLX-8bit",
+    "name": "Qwen3-4B-Instruct-2507-MLX-8bit",
+    "downloads": 54687,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-31B-it-MLX-5bit",
+    "name": "gemma-4-31B-it-MLX-5bit",
+    "downloads": 54039,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-4B-Thinking-2507-MLX-8bit",
+    "name": "Qwen3-4B-Thinking-2507-MLX-8bit",
+    "downloads": 54003,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-4B-Instruct-2507-MLX-5bit",
+    "name": "Qwen3-4B-Instruct-2507-MLX-5bit",
+    "downloads": 53269,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-4B-Instruct-2507-MLX-6bit",
+    "name": "Qwen3-4B-Instruct-2507-MLX-6bit",
+    "downloads": 53245,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-14B-MLX-4bit",
+    "name": "Qwen3-14B-MLX-4bit",
+    "downloads": 53196,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-4B-Thinking-2507-MLX-6bit",
+    "name": "Qwen3-4B-Thinking-2507-MLX-6bit",
+    "downloads": 52956,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen2.5-Coder-32B-Instruct-MLX-4bit",
+    "name": "Qwen2.5-Coder-32B-Instruct-MLX-4bit",
+    "downloads": 49233,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/Qwen3.5-9B-OptiQ-4bit",
+    "name": "Qwen3.5-9B-OptiQ-4bit",
+    "downloads": 49112,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/gemma-4-e4b-it-4bit",
+    "name": "gemma-4-e4b-it-4bit",
+    "downloads": 46646,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "mlx-community/parakeet-tdt-0.6b-v3",
+    "name": "parakeet-tdt-0.6b-v3",
+    "downloads": 1242839,
+    "pipeline": "automatic-speech-recognition"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-E4B-it-MLX-4bit",
+    "name": "gemma-4-E4B-it-MLX-4bit",
+    "downloads": 1026402,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-E4B-it-MLX-8bit",
+    "name": "gemma-4-E4B-it-MLX-8bit",
+    "downloads": 1001041,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-E4B-it-MLX-6bit",
+    "name": "gemma-4-E4B-it-MLX-6bit",
+    "downloads": 983466,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-E4B-it-MLX-5bit",
+    "name": "gemma-4-E4B-it-MLX-5bit",
+    "downloads": 982472,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "mlx-community/parakeet-tdt-0.6b-v2",
+    "name": "parakeet-tdt-0.6b-v2",
+    "downloads": 785591,
+    "pipeline": "automatic-speech-recognition"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3.6-27B-MLX-4bit",
+    "name": "Qwen3.6-27B-MLX-4bit",
+    "downloads": 710912,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-26B-A4B-it-QAT-MLX-4bit",
+    "name": "gemma-4-26B-A4B-it-QAT-MLX-4bit",
+    "downloads": 674633,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3.6-27B-MLX-8bit",
+    "name": "Qwen3.6-27B-MLX-8bit",
+    "downloads": 673550,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3.6-27B-MLX-6bit",
+    "name": "Qwen3.6-27B-MLX-6bit",
+    "downloads": 625955,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3.6-27B-MLX-5bit",
+    "name": "Qwen3.6-27B-MLX-5bit",
+    "downloads": 624191,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3.5-9B-MLX-4bit",
+    "name": "Qwen3.5-9B-MLX-4bit",
+    "downloads": 442603,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3.6-35B-A3B-MLX-8bit",
+    "name": "Qwen3.6-35B-A3B-MLX-8bit",
+    "downloads": 399587,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3.6-35B-A3B-MLX-4bit",
+    "name": "Qwen3.6-35B-A3B-MLX-4bit",
+    "downloads": 397192,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "mlx-community/gpt-oss-20b-MXFP4-Q8",
+    "name": "gpt-oss-20b-MXFP4-Q8",
+    "downloads": 395159,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3.5-9B-MLX-8bit",
+    "name": "Qwen3.5-9B-MLX-8bit",
+    "downloads": 384759,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3.6-35B-A3B-MLX-6bit",
+    "name": "Qwen3.6-35B-A3B-MLX-6bit",
+    "downloads": 377697,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/DeepSeek-R1-0528-Qwen3-8B-MLX-4bit",
+    "name": "DeepSeek-R1-0528-Qwen3-8B-MLX-4bit",
+    "downloads": 363423,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/DeepSeek-R1-0528-Qwen3-8B-MLX-8bit",
+    "name": "DeepSeek-R1-0528-Qwen3-8B-MLX-8bit",
+    "downloads": 330476,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/Kimi-K2.5",
+    "name": "Kimi-K2.5",
+    "downloads": 251869,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-Coder-Next-MLX-8bit",
+    "name": "Qwen3-Coder-Next-MLX-8bit",
+    "downloads": 231135,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/parakeet-tdt_ctc-110m",
+    "name": "parakeet-tdt_ctc-110m",
+    "downloads": 228531,
+    "pipeline": "automatic-speech-recognition"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-26B-A4B-it-MLX-4bit",
+    "name": "gemma-4-26B-A4B-it-MLX-4bit",
+    "downloads": 219324,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/LFM2-24B-A2B-MLX-4bit",
+    "name": "LFM2-24B-A2B-MLX-4bit",
+    "downloads": 205176,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-Coder-Next-MLX-4bit",
+    "name": "Qwen3-Coder-Next-MLX-4bit",
+    "downloads": 204615,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/LFM2-24B-A2B-MLX-8bit",
+    "name": "LFM2-24B-A2B-MLX-8bit",
+    "downloads": 202419,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/LFM2-24B-A2B-MLX-6bit",
+    "name": "LFM2-24B-A2B-MLX-6bit",
+    "downloads": 201878,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/LFM2-24B-A2B-MLX-5bit",
+    "name": "LFM2-24B-A2B-MLX-5bit",
+    "downloads": 201864,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/GLM-4.7-Flash-MLX-8bit",
+    "name": "GLM-4.7-Flash-MLX-8bit",
+    "downloads": 201341,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-Coder-30B-A3B-Instruct-MLX-4bit",
+    "name": "Qwen3-Coder-30B-A3B-Instruct-MLX-4bit",
+    "downloads": 190467,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/GLM-4.7-Flash-MLX-6bit",
+    "name": "GLM-4.7-Flash-MLX-6bit",
+    "downloads": 188687,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-Coder-Next-MLX-6bit",
+    "name": "Qwen3-Coder-Next-MLX-6bit",
+    "downloads": 184538,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/Devstral-Small-2505-4bit",
+    "name": "Devstral-Small-2505-4bit",
+    "downloads": 167968,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-Coder-30B-A3B-Instruct-MLX-8bit",
+    "name": "Qwen3-Coder-30B-A3B-Instruct-MLX-8bit",
+    "downloads": 167111,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-Coder-30B-A3B-Instruct-MLX-5bit",
+    "name": "Qwen3-Coder-30B-A3B-Instruct-MLX-5bit",
+    "downloads": 165130,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-E2B-it-MLX-4bit",
+    "name": "gemma-4-E2B-it-MLX-4bit",
+    "downloads": 164286,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-26B-A4B-it-MLX-8bit",
+    "name": "gemma-4-26B-A4B-it-MLX-8bit",
+    "downloads": 163021,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-Coder-30B-A3B-Instruct-MLX-6bit",
+    "name": "Qwen3-Coder-30B-A3B-Instruct-MLX-6bit",
+    "downloads": 161682,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/whisper-large-v3-mlx",
+    "name": "whisper-large-v3-mlx",
+    "downloads": 160865,
+    "pipeline": "automatic-speech-recognition"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen2.5-Coder-14B-Instruct-MLX-4bit",
+    "name": "Qwen2.5-Coder-14B-Instruct-MLX-4bit",
+    "downloads": 158315,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-E2B-it-MLX-8bit",
+    "name": "gemma-4-E2B-it-MLX-8bit",
+    "downloads": 155486,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-E2B-it-MLX-6bit",
+    "name": "gemma-4-E2B-it-MLX-6bit",
+    "downloads": 153897,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-E2B-it-MLX-5bit",
+    "name": "gemma-4-E2B-it-MLX-5bit",
+    "downloads": 153772,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-26B-A4B-it-MLX-6bit",
+    "name": "gemma-4-26B-A4B-it-MLX-6bit",
+    "downloads": 148562,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-26B-A4B-it-MLX-5bit",
+    "name": "gemma-4-26B-A4B-it-MLX-5bit",
+    "downloads": 146409,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "mlx-community/nomicai-modernbert-embed-base-bf16",
+    "name": "nomicai-modernbert-embed-base-bf16",
+    "downloads": 146062,
+    "pipeline": "sentence-similarity"
+  },
+  {
+    "hfPath": "mlx-community/Qwen2.5-14B-Instruct-4bit",
+    "name": "Qwen2.5-14B-Instruct-4bit",
+    "downloads": 145491,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/Devstral-Small-2-24B-Instruct-2512-4bit",
+    "name": "Devstral-Small-2-24B-Instruct-2512-4bit",
+    "downloads": 140066,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-VL-4B-Instruct-MLX-4bit",
+    "name": "Qwen3-VL-4B-Instruct-MLX-4bit",
+    "downloads": 129439,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-VL-4B-Instruct-MLX-8bit",
+    "name": "Qwen3-VL-4B-Instruct-MLX-8bit",
+    "downloads": 125521,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen2.5-Coder-14B-Instruct-MLX-8bit",
+    "name": "Qwen2.5-Coder-14B-Instruct-MLX-8bit",
+    "downloads": 124882,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-VL-4B-Instruct-MLX-6bit",
+    "name": "Qwen3-VL-4B-Instruct-MLX-6bit",
+    "downloads": 124865,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-VL-4B-Instruct-MLX-5bit",
+    "name": "Qwen3-VL-4B-Instruct-MLX-5bit",
+    "downloads": 124774,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/LFM2.5-1.2B-Instruct-MLX-8bit",
+    "name": "LFM2.5-1.2B-Instruct-MLX-8bit",
+    "downloads": 107944,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/LFM2.5-1.2B-Instruct-MLX-4bit",
+    "name": "LFM2.5-1.2B-Instruct-MLX-4bit",
+    "downloads": 105611,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/LFM2.5-1.2B-Instruct-MLX-6bit",
+    "name": "LFM2.5-1.2B-Instruct-MLX-6bit",
+    "downloads": 105338,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/gemma-3-4b-it-qat-4bit",
+    "name": "gemma-3-4b-it-qat-4bit",
+    "downloads": 104857,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/GLM-4.6V-Flash-MLX-4bit",
+    "name": "GLM-4.6V-Flash-MLX-4bit",
+    "downloads": 103529,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/GLM-4.6V-Flash-MLX-8bit",
+    "name": "GLM-4.6V-Flash-MLX-8bit",
+    "downloads": 102138,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/GLM-4.6V-Flash-MLX-6bit",
+    "name": "GLM-4.6V-Flash-MLX-6bit",
+    "downloads": 101208,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "mlx-community/Kimi-K2.6-mlx-DQ3_K_M-q8",
+    "name": "Kimi-K2.6-mlx-DQ3_K_M-q8",
+    "downloads": 100468,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-VL-8B-Instruct-MLX-4bit",
+    "name": "Qwen3-VL-8B-Instruct-MLX-4bit",
+    "downloads": 99497,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "mlx-community/Qwen3.6-35B-A3B-4bit",
+    "name": "Qwen3.6-35B-A3B-4bit",
+    "downloads": 94531,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-VL-8B-Instruct-MLX-8bit",
+    "name": "Qwen3-VL-8B-Instruct-MLX-8bit",
+    "downloads": 92737,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-VL-8B-Instruct-MLX-5bit",
+    "name": "Qwen3-VL-8B-Instruct-MLX-5bit",
+    "downloads": 91388,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-VL-8B-Instruct-MLX-6bit",
+    "name": "Qwen3-VL-8B-Instruct-MLX-6bit",
+    "downloads": 91273,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "mlx-community/gemma-3-12b-it-qat-4bit",
+    "name": "gemma-3-12b-it-qat-4bit",
+    "downloads": 87120,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Hermes-4-70B-MLX-4bit",
+    "name": "Hermes-4-70B-MLX-4bit",
+    "downloads": 85505,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/DeepSeek-R1-Distill-Qwen-14B-4bit",
+    "name": "DeepSeek-R1-Distill-Qwen-14B-4bit",
+    "downloads": 79447,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-31B-it-MLX-8bit",
+    "name": "gemma-4-31B-it-MLX-8bit",
+    "downloads": 78724,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Hermes-4-70B-MLX-8bit",
+    "name": "Hermes-4-70B-MLX-8bit",
+    "downloads": 78060,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Hermes-4-70B-MLX-6bit",
+    "name": "Hermes-4-70B-MLX-6bit",
+    "downloads": 77377,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Hermes-4-70B-MLX-5bit",
+    "name": "Hermes-4-70B-MLX-5bit",
+    "downloads": 76995,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/gemma-4-e2b-it-4bit",
+    "name": "gemma-4-e2b-it-4bit",
+    "downloads": 76738,
+    "pipeline": "any-to-any"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-3n-E4B-it-MLX-4bit",
+    "name": "gemma-3n-E4B-it-MLX-4bit",
+    "downloads": 71867,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-3n-E4B-it-MLX-bf16",
+    "name": "gemma-3n-E4B-it-MLX-bf16",
+    "downloads": 71708,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/NVIDIA-Nemotron-3-Nano-30B-A3B-MLX-4bit",
+    "name": "NVIDIA-Nemotron-3-Nano-30B-A3B-MLX-4bit",
+    "downloads": 70201,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-3n-E4B-it-MLX-8bit",
+    "name": "gemma-3n-E4B-it-MLX-8bit",
+    "downloads": 69855,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-3n-E4B-it-MLX-6bit",
+    "name": "gemma-3n-E4B-it-MLX-6bit",
+    "downloads": 69464,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "mlx-community/gemma-4-12B-it-8bit",
+    "name": "gemma-4-12B-it-8bit",
+    "downloads": 63560,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/NVIDIA-Nemotron-3-Nano-30B-A3B-MLX-8bit",
+    "name": "NVIDIA-Nemotron-3-Nano-30B-A3B-MLX-8bit",
+    "downloads": 63130,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+    "name": "Llama-3.2-1B-Instruct-4bit",
+    "downloads": 62327,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/NVIDIA-Nemotron-3-Nano-30B-A3B-MLX-6bit",
+    "name": "NVIDIA-Nemotron-3-Nano-30B-A3B-MLX-6bit",
+    "downloads": 62149,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-31B-it-MLX-4bit",
+    "name": "gemma-4-31B-it-MLX-4bit",
+    "downloads": 61830,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/NVIDIA-Nemotron-3-Nano-30B-A3B-MLX-5bit",
+    "name": "NVIDIA-Nemotron-3-Nano-30B-A3B-MLX-5bit",
+    "downloads": 61824,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-4B-Instruct-2507-MLX-4bit",
+    "name": "Qwen3-4B-Instruct-2507-MLX-4bit",
+    "downloads": 58481,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Phi-4-mini-reasoning-MLX-4bit",
+    "name": "Phi-4-mini-reasoning-MLX-4bit",
+    "downloads": 57096,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-31B-it-MLX-6bit",
+    "name": "gemma-4-31B-it-MLX-6bit",
+    "downloads": 55845,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-4B-Thinking-2507-MLX-4bit",
+    "name": "Qwen3-4B-Thinking-2507-MLX-4bit",
+    "downloads": 55604,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/whisper-base-mlx",
+    "name": "whisper-base-mlx",
+    "downloads": 54826,
+    "pipeline": "automatic-speech-recognition"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-4B-Instruct-2507-MLX-8bit",
+    "name": "Qwen3-4B-Instruct-2507-MLX-8bit",
+    "downloads": 54687,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/gemma-4-31B-it-MLX-5bit",
+    "name": "gemma-4-31B-it-MLX-5bit",
+    "downloads": 54039,
+    "pipeline": "image-text-to-text"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-4B-Thinking-2507-MLX-8bit",
+    "name": "Qwen3-4B-Thinking-2507-MLX-8bit",
+    "downloads": 54003,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-4B-Instruct-2507-MLX-5bit",
+    "name": "Qwen3-4B-Instruct-2507-MLX-5bit",
+    "downloads": 53269,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-4B-Instruct-2507-MLX-6bit",
+    "name": "Qwen3-4B-Instruct-2507-MLX-6bit",
+    "downloads": 53245,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-14B-MLX-4bit",
+    "name": "Qwen3-14B-MLX-4bit",
+    "downloads": 53196,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen3-4B-Thinking-2507-MLX-6bit",
+    "name": "Qwen3-4B-Thinking-2507-MLX-6bit",
+    "downloads": 52956,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "lmstudio-community/Qwen2.5-Coder-32B-Instruct-MLX-4bit",
+    "name": "Qwen2.5-Coder-32B-Instruct-MLX-4bit",
+    "downloads": 49233,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/Qwen3.5-9B-OptiQ-4bit",
+    "name": "Qwen3.5-9B-OptiQ-4bit",
+    "downloads": 49112,
+    "pipeline": "text-generation"
+  },
+  {
+    "hfPath": "mlx-community/gemma-4-e4b-it-4bit",
+    "name": "gemma-4-e4b-it-4bit",
+    "downloads": 46646,
+    "pipeline": "any-to-any"
+  }
+]

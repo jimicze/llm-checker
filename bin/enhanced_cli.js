@@ -4724,6 +4724,8 @@ async function handleMlxAiRun(options) {
 
     const ConfigGenerator = require('../src/config/generator');
     const gen = new ConfigGenerator();
+    const genOpts = gen.getOptimalConfig(options.category || 'general');
+    const useCase = options.category || 'general';
     const MLXModelCatalog = require('../src/mlx/model-catalog');
     const AppleSiliconDetector = require('../src/hardware/backends/apple-silicon');
     const detector = new AppleSiliconDetector();
@@ -4842,12 +4844,19 @@ async function handleMlxAiRun(options) {
     }
 
     if (options.prompt) {
-        console.log(chalk.cyan(`\n>>> ${options.prompt}`));
         const modelName = candidateModels[0];
         try {
-            const ConfigGenerator = require('../src/config/generator');
-            const gen = new ConfigGenerator();
-            const genOpts = gen.getOptimalConfig(options.category || 'general');
+            // Display configuration
+            console.log(chalk.cyan(`\n╭─ Config ─────────────────────────────`));
+            console.log(chalk.cyan(`│ Model: ${chalk.white(modelName)}`));
+            console.log(chalk.cyan(`│ Mode:  ${chalk.white(mlxClient.mode)}`));
+            console.log(chalk.cyan(`│ Use case: ${chalk.white(useCase)}`));
+            console.log(chalk.cyan(`│ temp=${chalk.white(genOpts.temperature)} top_p=${chalk.white(genOpts.topP)} max_tokens=${chalk.white(genOpts.maxTokens)}`));
+            if (genOpts.repeatPenalty !== undefined) console.log(chalk.cyan(`│ repeat_penalty=${chalk.white(genOpts.repeatPenalty)}`));
+            if (genOpts.topK) console.log(chalk.cyan(`│ top_k=${chalk.white(genOpts.topK)}`));
+            console.log(chalk.cyan(`╰────────────────────────────────────`));
+
+            console.log(chalk.cyan(`\n>>> ${options.prompt}`));
             const result = await mlxClient.generate(modelName, options.prompt, {
                 generationOptions: {
                     temperature: genOpts.temperature,
@@ -4864,7 +4873,13 @@ async function handleMlxAiRun(options) {
     }
 
     // Interactive mode
-    console.log(chalk.magenta.bold(`\nStarting MLX interactive session with ${candidateModels[0]}...`));
+    console.log(chalk.magenta.bold(`\n╭─ MLX Interactive Session ────────────────`));
+    console.log(chalk.magenta(`│ Model: ${chalk.white(candidateModels[0])}`));
+    console.log(chalk.magenta(`│ Mode:  ${chalk.white(mlxClient.mode)}`));
+    console.log(chalk.magenta(`│ Use case: ${chalk.white(category)}`));
+    console.log(chalk.magenta(`│ temp=${chalk.white(genOpts.temperature)} top_p=${chalk.white(genOpts.topP)} max_tokens=${chalk.white(genOpts.maxTokens)}`));
+    if (genOpts.repeatPenalty !== undefined) console.log(chalk.magenta(`│ repeat_penalty=${chalk.white(genOpts.repeatPenalty)}`));
+    console.log(chalk.magenta(`╰──────────────────────────────────────`));
     console.log(chalk.gray(`Tip: Type ${chalk.cyan('/bye')} to exit\n`));
 
     const rl = readline.createInterface({
@@ -4883,9 +4898,6 @@ async function handleMlxAiRun(options) {
         if (!trimmed) { rl.prompt(); return; }
 
         try {
-            const ConfigGenerator = require('../src/config/generator');
-            const gen = new ConfigGenerator();
-            const genOpts = gen.getOptimalConfig(options.category || 'general');
             const result = await mlxClient.generate(candidateModels[0], trimmed, {
                 generationOptions: {
                     temperature: genOpts.temperature,
