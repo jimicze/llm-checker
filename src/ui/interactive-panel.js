@@ -35,6 +35,18 @@ const REQUIRED_ARG_PROMPTS = {
             message: 'Search text for `search`:',
             validate: (value) => (value && value.trim() ? true : 'Type a search query')
         }
+    ],
+    config: [
+        {
+            name: 'model',
+            message: 'Model path (e.g. mlx-community/Qwen...):',
+            validate: (value) => (value && value.trim() ? true : 'Enter model path or leave empty for auto-detect')
+        },
+        {
+            name: 'extraArgs',
+            message: 'Extra flags (--runtime omlx --category coding --save):',
+            validate: () => true
+        }
     ]
 };
 
@@ -428,7 +440,17 @@ async function collectCommandArgs(commandMeta) {
 
     for (const requiredPrompt of requiredPrompts) {
         const value = String(answers[requiredPrompt.name] || '').trim();
-        if (value) args.push(value);
+        if (!value) continue;
+        // Handle custom prompts that return full flag strings (e.g. "model" → "--model")
+        if (requiredPrompt.name === 'model') {
+            args.push('--model', value);
+        } else if (requiredPrompt.name === 'extraArgs') {
+            // Split extra flags string into individual args
+            const extraParts = value.match(/(?:--\S+|\S+)/g) || [];
+            args.push(...extraParts);
+        } else {
+            args.push(value);
+        }
     }
 
     args.push(...buildRequiredOptionArgs(requiredOptionPrompts, answers));
