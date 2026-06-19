@@ -3889,19 +3889,22 @@ program
 // New command: mlx-sync - Sync MLX model catalog from HuggingFace
 program
     .command('mlx-sync')
-    .description('Sync MLX model catalog from HuggingFace mlx-community')
-    .option('--limit <n>', 'Number of models to fetch (default: 100, max: 500)', '100')
-    .option('--save', 'Save synced models to seed catalog file')
+    .description('Sync MLX model catalog from HuggingFace mlx-community (5,111+ models)')
+    .option('--limit <n>', 'Number of models to fetch (default: 100, use --all for everything)', '100')
+    .option('--all', 'Fetch ALL mlx-community models (may take a while)')
+    .option('--save', 'Save synced models to JSON file')
     .option('--json', 'Output as JSON')
     .option('--compare', 'Compare with current seed catalog and show differences')
     .action(async (options) => {
         const MLXModelCatalog = require('../src/mlx/model-catalog');
         const catalog = new MLXModelCatalog();
-        const limit = parseInt(options.limit) || 20;
+        const limit = options.all ? 10000 : (parseInt(options.limit) || 100);
 
         if (!options.json) {
             console.log(chalk.cyan.bold('\n  MLX Model Sync'));
-            console.log(chalk.gray(`  Fetching top ${limit} models from HuggingFace mlx-community...`));
+            const label = options.all ? 'ALL' : `top ${limit}`;
+            console.log(chalk.gray(`  Fetching ${label} models from HuggingFace mlx-community...`));
+            if (options.all) console.log(chalk.gray('  This may take a minute (5,000+ models)...'));
         }
 
         try {

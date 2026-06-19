@@ -121,14 +121,18 @@ class MLXModelCatalog {
     async searchHuggingface(query = 'mlx-community', limit = 100) {
         const fetch = require('../utils/fetch');
         const results = [];
-        const perPage = Math.min(limit, 100);
-        let page = 0;
+        const perPage = 100;
+        let cursor = null;
+        let timeout = 30000;
+        const maxTime = Date.now() + 120000; // max 2 min total
 
         try {
-            while (results.length < limit) {
-                const url = `${this.hfEndpoint}/models?search=${encodeURIComponent(query)}&sort=downloads&direction=-1&limit=${perPage}&offset=${page * perPage}`;
+            while (results.length < limit && Date.now() < maxTime) {
+                let url = `${this.hfEndpoint}/models?search=${encodeURIComponent(query)}&sort=downloads&direction=-1&limit=${perPage}`;
+                if (cursor) url += `&cursor=${encodeURIComponent(cursor)}`;
+
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
+                const timeoutId = setTimeout(() => controller.abort(), timeout);
                 const response = await fetch(url, { signal: controller.signal });
                 clearTimeout(timeoutId);
 
@@ -144,8 +148,22 @@ class MLXModelCatalog {
                 }));
 
                 results.push(...mapped);
-                page++;
-                if (mapped.length < perPage) break; // no more pages
+
+                // Parse cursor from Link header for next page
+                const link = response.headers.get('Link');
+                if (link) {
+                    const nextMatch = link.match(/<[^>]*cursor=([^&>]+)[^>]*>;\s*rel="next"/);
+                    if (nextMatch) {
+                        cursor = decodeURIComponent(nextMatch[1]);
+                    } else {
+                        break; // no next page
+                    }
+                } else {
+                    break; // no Link header = last page
+                }
+
+                if (mapped.length < perPage) break;
+                timeout = 10000; // shorter timeout for subsequent pages
             }
 
             return results.slice(0, limit);
