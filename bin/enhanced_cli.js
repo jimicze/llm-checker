@@ -4781,7 +4781,8 @@ async function handleMlxAiRun(options) {
                 console.log(chalk.cyan(`│ ${chalk.bold('Ollama')} — fallback (multiplatforma, nižší výkon)`));
                 if (totalRAM >= 32) {
                     console.log(chalk.cyan(`│`));
-                    console.log(chalk.cyan(`│ 📌 Pro 48GB RAM ideální: oMLX server s --kv-bits 4`));
+                    console.log(chalk.cyan(`│ 📌 Direct MLX: mlx_lm.generate --kv-bits 4 --max-kv-size 32768`));
+                    console.log(chalk.cyan(`│    oMLX server má tiered KV cache vestavěnou automaticky`));
                     console.log(chalk.cyan(`│    Zvládne modely až 27B v 4-bit, 12B v 8-bit`));
                 }
             } else if (hasNvidia && platform === 'linux') {
