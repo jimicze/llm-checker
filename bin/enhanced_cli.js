@@ -3568,7 +3568,7 @@ program
     .description('Generate MLX/oMLX/Direct configuration for a model')
     .option('-m, --model <model>', 'Model name/path (e.g. mlx-community/Qwen2.5-0.5B-Instruct-4bit)')
     .option('-c, --category <category>', 'Use case: coding, reasoning, general, chat', 'general')
-    .option('--runtime <runtime>', 'Runtime: mlx (default), omlx, direct', 'mlx')
+    .option('--runtime <runtime>', 'Runtime: all (default), mlx, omlx, direct', 'all')
     .option('--ram <gb>', 'Total system RAM in GB (default: auto-detect)', '0')
     .option('--save', 'Save oMLX config to ~/.omlx/model_settings.json')
     .option('--json', 'Output as JSON')
