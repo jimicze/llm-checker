@@ -26,6 +26,12 @@ const MLX_SEED_MODELS = [
     { name: 'Mistral-Small-3.1-24B-4bit', hfPath: 'mlx-community/Mistral-Small-3.1-24B-Instruct-4bit', paramsB: 24, quantization: '4bit', category: 'general', isMoE: false, context: 32768 },
     { name: 'Mistral-3.1-8B-4bit', hfPath: 'mlx-community/Mistral-3.1-8B-Instruct-4bit', paramsB: 8, quantization: '4bit', category: 'general', isMoE: false, context: 32768 },
     { name: 'Phi-4-mini-3.8B-4bit', hfPath: 'mlx-community/Phi-4-mini-instruct-4bit', paramsB: 3.8, quantization: '4bit', category: 'general', isMoE: false, context: 16384 },
+
+    // Gemma 4 QAT family
+    { name: 'Gemma-4-12B-qat-bf16', hfPath: 'mlx-community/Gemma-4-12B-it-qat-bf16', paramsB: 12, quantization: 'BF16', category: 'general', isMoE: false, context: 262144, isQAT: true },
+    { name: 'Gemma-4-12B-qat-mxfp8', hfPath: 'mlx-community/Gemma-4-12B-it-qat-mxfp8', paramsB: 12, quantization: 'MXFP8', category: 'general', isMoE: false, context: 262144, isQAT: true },
+    { name: 'Gemma-4-12B-qat-4bit', hfPath: 'mlx-community/Gemma-4-12B-it-qat-4bit', paramsB: 12, quantization: '4bit', category: 'general', isMoE: false, context: 262144, isQAT: true },
+    { name: 'Gemma-4-12B-qat-OptiQ-4bit', hfPath: 'mlx-community/Gemma-4-12B-it-qat-OptiQ-4bit', paramsB: 12, quantization: 'OptiQ-4bit', category: 'general', isMoE: false, context: 262144, isQAT: true },
 ];
 
 const QUANT_MAP = {
@@ -36,7 +42,9 @@ const QUANT_MAP = {
     'MXFP4-Q8': 'Q4_K_M',
     'Q4_K_M': 'Q4_K_M',
     'Q8_0': 'Q8_0',
-    'FP16': 'FP16'
+    'FP16': 'FP16',
+    'mxfp8': 'MXFP8', 'mxfp4': 'MXFP4', 'nvfp4': 'NVFP4',
+    'bf16': 'BF16', 'qat-bf16': 'BF16', 'qat-mxfp8': 'MXFP8',
 };
 
 class MLXModelCatalog {
@@ -88,7 +96,9 @@ class MLXModelCatalog {
         const bytesPerParam = {
             'Q4_K_M': 0.58, 'Q8_0': 1.05, 'FP16': 2.0,
             '4bit': 0.5, '8bit': 1.0, 'OptiQ-4bit': 0.5,
-            'fp16': 2.0
+            'fp16': 2.0,
+            'MXFP8': 1.0, 'MXFP4': 0.50, 'NVFP4': 0.50,
+            'BF16': 2.0,
         };
         const bpp = bytesPerParam[quantization] || 0.58;
         const weightGB = (paramsB * 1e9 * bpp) / (1024 ** 3);
@@ -124,6 +134,25 @@ class MLXModelCatalog {
         } catch (e) {
             return [];
         }
+    }
+
+    getQualityPenalty(quantization, isQAT = false) {
+        const map = { 'BF16': 0, 'MXFP8': 0.5, 'Q8_0': 0.5, 'Q4_K_M': 5, 'OptiQ-4bit': 3, '4bit': 5 };
+        const base = quantization in map ? map[quantization] : 5;
+        return isQAT ? Math.round(base * 0.6) : base;
+    }
+
+    isQATModel(modelName) {
+        return /qat/i.test(String(modelName));
+    }
+
+    static parseModelName(name) {
+        if (!name) return {};
+        const moe = name.match(/([\d.]+)B[-_][Aa]([\d.]+)b?/i);
+        if (moe) return { paramsB: parseFloat(moe[1]), activeParamsB: parseFloat(moe[2]), isMoE: true };
+        const dense = name.match(/([\d.]+)B/);
+        if (dense) return { paramsB: parseFloat(dense[1]), isMoE: false };
+        return {};
     }
 }
 

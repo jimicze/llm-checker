@@ -54,6 +54,52 @@ class ConfigGenerator {
     }
 
     /**
+     * Generate an optimized mlx_lm.server command with KV cache tuning
+     * @param {string} modelRef - Model path or HuggingFace repo
+     * @param {string} useCase - Inference category
+     * @param {number} totalRAMGB - Total system RAM in GB
+     * @param {object} options - Override options (kvBits, maxKvSize, temperature, topP, seed)
+     * @returns {string} Shell command
+     */
+    generateOptimizedMLXServerCommand(modelRef, useCase = 'general', totalRAMGB = 48, options = {}) {
+        const preset = this.getOptimalConfig(useCase);
+        const kvBits = options.kvBits ?? 4;
+        const maxKvSize = options.maxKvSize ?? Math.min(32768, Math.max(8192, (totalRAMGB - 4) * 750));
+        const temp = options.temperature ?? preset.temperature;
+
+        let cmd = `mlx_lm.server --model ${modelRef}`;
+        cmd += ` --max-kv-size ${maxKvSize}`;
+        cmd += ` --kv-bits ${kvBits}`;
+        cmd += ` --trust-remote-code`;
+        cmd += ` --temp ${temp}`;
+        if (preset.topP) cmd += ` --top-p ${preset.topP}`;
+        if (options.seed !== undefined) cmd += ` --seed ${options.seed}`;
+
+        return cmd;
+    }
+
+    /**
+     * Generate a hint for increasing the macOS GPU wired memory limit
+     * @param {number} totalRAMGB - Total system RAM in GB
+     * @returns {object} Hint object with title, description, command, and examples
+     */
+    generateWiredMemoryHint(totalRAMGB) {
+        const limit = Math.floor((totalRAMGB - 6) * 1024);
+        return {
+            title: 'Increase GPU wired memory limit',
+            description: 'Apple Silicon macOS limits GPU-accessible memory. For large models (>70% of RAM), increase this limit.',
+            command: `sudo sysctl iogpu.wired_mem_limit=${limit}`,
+            formula: '(total_RAM - 6GB) * 1024',
+            examples: {
+                '48GB': Math.floor((48 - 6) * 1024),
+                '32GB': Math.floor((32 - 6) * 1024),
+                '24GB': Math.floor((24 - 6) * 1024),
+                '16GB': Math.floor((16 - 6) * 1024),
+            }
+        };
+    }
+
+    /**
      * Generate oMLX settings JSON snippet
      * @param {object|string} model - Model object with name property, or string
      * @param {string} useCase - Inference category
