@@ -4454,6 +4454,94 @@ async function handleMlxAiRun(options) {
         mode: process.env.MLX_MODE || 'omlx'
     });
 
+    const ConfigGenerator = require('../src/config/generator');
+    const gen = new ConfigGenerator();
+    const MLXModelCatalog = require('../src/mlx/model-catalog');
+    const AppleSiliconDetector = require('../src/hardware/backends/apple-silicon');
+    const detector = new AppleSiliconDetector();
+    const catalog = new MLXModelCatalog();
+
+    // ── Reference mode: always works, no server needed ──
+    if (options.referenceOnly) {
+        const checker = new (getLLMChecker())();
+        const systemInfo = await checker.getSystemInfo();
+
+        console.log(chalk.cyan('\nSystem Info:'));
+        console.log(`  Platform: ${systemInfo.os?.platform || process.platform}`);
+        console.log(`  CPU: ${systemInfo.cpu?.brand || 'Unknown'}`);
+        console.log(`  RAM: ${systemInfo.memory?.total || 0}GB`);
+
+        // Apple Silicon MLX hardware info
+        try {
+            const mlxInfo = detector.mlxInfo();
+            if (mlxInfo.available) {
+                console.log(chalk.green('\n✓ MLX Framework Installed'));
+            } else {
+                console.log(chalk.yellow('\n○ MLX Framework Not Installed'));
+                console.log(chalk.gray('  Install: pip install -U mlx-lm'));
+            }
+            console.log(chalk.cyan('\nHardware:'));
+            console.log(`  Chip: ${mlxInfo.chip || 'Unknown'}`);
+            console.log(`  Memory: ${mlxInfo.memoryGB || systemInfo.memory?.total || '?'}GB unified`);
+            const effectiveMem = detector.getEffectiveMemoryForMLX();
+            if (effectiveMem > 0) {
+                console.log(`  Effective for models: ~${effectiveMem}GB`);
+            }
+            if (mlxInfo.memoryBandwidthGBs) {
+                console.log(`  Memory Bandwidth: ${mlxInfo.memoryBandwidthGBs} GB/s`);
+            }
+        } catch (e) {
+            // HW info non-critical
+        }
+
+        // MLX model recommendations
+        try {
+            const effectiveMem = detector.getEffectiveMemoryForMLX() || Math.round((systemInfo.memory?.total || 8) * 0.5);
+            console.log(chalk.cyan(`\nRecommended MLX Models (${effectiveMem}GB usable):`));
+
+            ['coding', 'reasoning', 'general'].forEach(uc => {
+                const suggestions = catalog.getModelByHardware(effectiveMem, uc);
+                if (suggestions.length > 0) {
+                    const best = suggestions[0];
+                    const moeTag = best.isMoE ? ` (MoE, ${best.activeParamsB}B active)` : '';
+                    const qatTag = best.isQAT ? ` [QAT]` : '';
+                    console.log(`  ${chalk.bold(uc)}: ${best.name}${qatTag}${moeTag} — ~${best.totalGB}GB RAM`);
+                    if (best.isQAT) {
+                        console.log(`       Quality penalty: ${catalog.getQualityPenalty(best.quantization, true)}% (QAT bonus)`);
+                    }
+                    // Show run command
+                    const cmd = gen.generateOptimizedMLXServerCommand(best.hfPath, uc, systemInfo.memory?.total || 48);
+                    console.log(`       ${chalk.gray(cmd)}`);
+                }
+            });
+
+            // Show all compatible models
+            console.log(chalk.gray('\nAll compatible models:'));
+            const all = catalog.getModelByHardware(effectiveMem, 'coding');
+            all.forEach(m => {
+                const moeTag = m.isMoE ? ` (MoE ${m.activeParamsB}B active)` : '';
+                const qatTag = m.isQAT ? ` [QAT]` : '';
+                console.log(`  • ${m.name}${qatTag}${moeTag} — ${m.totalGB}GB — ${m.quantization}`);
+            });
+
+            // Show OS optimization hint
+            try {
+                const hint = gen.generateWiredMemoryHint(systemInfo.memory?.total || 48);
+                if (hint.command) {
+                    console.log(chalk.yellow(`\nOS Optimization:`));
+                    console.log(`  ${hint.title}: ${chalk.gray(hint.command)}`);
+                }
+            } catch (e) { /* optional */ }
+
+        } catch (e) {
+            console.log(chalk.red('  Model catalog unavailable:'), e.message);
+        }
+
+        console.log(chalk.gray('\n  To run: llm-checker ai-run --runtime mlx --prompt "..."'));
+        return;
+    }
+
+    // ── Normal mode: requires MLX availability ──
     const availability = await mlxClient.checkAvailability();
     if (!availability.available) {
         console.log(chalk.red('\nMLX not available:'));
@@ -4462,49 +4550,7 @@ async function handleMlxAiRun(options) {
             console.log(chalk.cyan(`  ${availability.hint}`));
         }
         console.log(chalk.gray('\n  Or switch to Ollama: llm-checker ai-run --runtime ollama'));
-        return;
-    }
-
-    if (options.referenceOnly) {
-        console.log(chalk.green('\nMLX Backend Available:'));
-        console.log(`  Mode: ${mlxClient.mode}`);
-        console.log(`  Server: ${mlxClient.baseURL}`);
-
-        const checker = new (getLLMChecker())();
-        const systemInfo = await checker.getSystemInfo();
-        console.log(chalk.cyan('\nSystem Info:'));
-        console.log(`  Platform: ${systemInfo.os?.platform || process.platform}`);
-        console.log(`  CPU: ${systemInfo.cpu?.brand || 'Unknown'}`);
-        console.log(`  RAM: ${systemInfo.memory?.total || 0}GB`);
-
-        // Show MLX model catalog recommendations
-        try {
-            const MLXModelCatalog = require('../src/mlx/model-catalog');
-            const AppleSiliconDetector = require('../src/hardware/backends/apple-silicon');
-            const detector = new AppleSiliconDetector();
-            const mlxInfo = detector.mlxInfo();
-            if (mlxInfo.available) {
-                console.log(chalk.cyan('\nMLX-Optimized Hardware:'));
-                console.log(`  Chip: ${mlxInfo.chip}`);
-                console.log(`  Memory: ${mlxInfo.memoryGB}GB unified`);
-                console.log(`  Effective for models: ~${detector.getEffectiveMemoryForMLX()}GB`);
-                console.log(`  Memory Bandwidth: ${mlxInfo.memoryBandwidthGBs} GB/s`);
-            }
-
-            const catalog = new MLXModelCatalog();
-            const effectiveMem = detector.getEffectiveMemoryForMLX() || Math.round((systemInfo.memory?.total || 8) * 0.5);
-            console.log(chalk.cyan('\nRecommended MLX Models:'));
-            const useCase = options.category || 'general';
-            const suggestions = catalog.getModelByHardware(effectiveMem, useCase);
-            suggestions.slice(0, 5).forEach(m => {
-                const moeTag = m.isMoE ? ` (MoE, ${m.activeParamsB}B active)` : '';
-                console.log(`  • ${m.name}${moeTag} — ~${m.totalGB}GB RAM`);
-            });
-        } catch (e) {
-            // Catalog display is optional
-        }
-
-        console.log(chalk.gray('\n  Run with --prompt or interactively to execute.'));
+        console.log(chalk.gray('\n  Use --reference-only to see MLX model recommendations without a server.'));
         return;
     }
 
