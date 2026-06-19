@@ -3583,13 +3583,120 @@ program
         }
     });
 
+/**
+ * Handle `installed --runtime mlx` — list locally available MLX models
+ */
+async function handleMlxInstalled(options) {
+    const MLXClient = require('../src/mlx/client');
+    const mlxClient = new MLXClient({ mode: process.env.MLX_MODE || 'omlx' });
+
+    if (!options.json) showAsciiArt('installed');
+    const spinner = ora('Scanning MLX models...').start();
+
+    try {
+        const models = await mlxClient.listModels();
+        if (!models || models.length === 0) {
+            spinner.fail('No MLX models found');
+            if (options.json) {
+                console.log(JSON.stringify([], null, 2));
+            } else {
+                console.log(chalk.yellow('\nNo MLX models found locally.'));
+                console.log(chalk.gray('  Download from HuggingFace mlx-community:'));
+                console.log(chalk.cyan('  https://huggingface.co/mlx-community'));
+                console.log(chalk.gray('\n  Or use oMLX admin panel to download models.'));
+                console.log(chalk.gray('  To scan oMLX server:'));
+                console.log(chalk.cyan('  installed --runtime mlx'));
+                console.log(chalk.gray('  (defaults to omlx mode, or set MLX_MODE=direct for local)'));
+            }
+            return;
+        }
+
+        spinner.succeed(`Found ${models.length} MLX models`);
+
+        const scored = models.map((m, i) => ({
+            name: m.name,
+            source: m.source || 'unknown',
+            score: Math.max(0, 100 - i * 5),
+            displayName: m.displayName || m.name,
+            path: m.path || ''
+        }));
+
+        // Sort
+        const sortBy = options.sort || 'score';
+        if (sortBy === 'name') scored.sort((a, b) => a.name.localeCompare(b.name));
+        else scored.sort((a, b) => b.score - a.score);
+
+        if (options.json) {
+            console.log(JSON.stringify(scored, null, 2));
+            return;
+        }
+
+        console.log('\n' + chalk.bgBlue.white.bold(' INSTALLED MLX MODELS '));
+        console.log(chalk.blue('╭' + '─'.repeat(65)));
+        const modeLabel = mlxClient.mode === 'direct' ? 'Direct (local dir)' : 'oMLX API';
+
+        // Show availability status
+        const avail = await mlxClient.checkAvailability();
+        console.log(chalk.blue('│') + ` Mode: ${chalk.cyan(modeLabel)} | Status: ${avail.available ? chalk.green('✓') : chalk.yellow('○ offline')}`);
+
+        if (!avail.available && mlxClient.mode === 'omlx') {
+            console.log(chalk.blue('│') + chalk.yellow(` ${avail.error}`));
+            console.log(chalk.blue('│') + chalk.gray(` ${avail.hint || ''}`));
+        }
+
+        console.log(chalk.blue('├' + '─'.repeat(65)));
+
+        const headers = [chalk.bold(' # '), chalk.bold(' Model '), chalk.bold(' Source '), chalk.bold(' Score ')];
+        if (mlxClient.mode === 'direct') headers.push(chalk.bold(' Path '));
+        const tableData = [headers];
+
+        scored.forEach((model, index) => {
+            const rank = index + 1;
+            const rankIcon = rank <= 3 ? ['🥇', '🥈', '🥉'][rank - 1] : `${rank}.`;
+            const scoreColor = model.score >= 75 ? chalk.green : model.score >= 50 ? chalk.yellow : chalk.red;
+            const row = [
+                rankIcon,
+                model.name.length > 30 ? model.name.substring(0, 27) + '...' : model.name,
+                chalk.gray(model.source),
+                scoreColor(`${model.score}/100`)
+            ];
+            if (mlxClient.mode === 'direct') row.push(chalk.gray(model.path || ''));
+            tableData.push(row);
+        });
+
+        const table = require('table');
+        console.log(table.table(tableData));
+
+        console.log(chalk.blue('╰' + '─'.repeat(65)));
+
+        // Show run hint
+        if (scored.length > 0) {
+            console.log(chalk.cyan('\nRun a model:'));
+            console.log(chalk.gray(`  ai-run --runtime mlx --models ${scored[0].name} --prompt "..."`));
+        }
+
+    } catch (error) {
+        spinner.fail('Error scanning MLX models');
+        console.error(chalk.red('Error:'), error.message);
+        if (process.env.DEBUG) console.error(error.stack);
+    }
+}
+
 // New command: installed - Show ranking of installed Ollama models
 program
     .command('installed')
-    .description('Show ranking of installed Ollama models by compatibility and use-case')
+    .description('Show ranking of installed models by compatibility and use-case')
     .option('--sort <by>', 'Sort by: score, size, name (default: score)', 'score')
     .option('--json', 'Output in JSON format')
+    .option('--runtime <runtime>', 'Runtime engine: ollama (default), mlx', 'ollama')
     .action(async (options) => {
+        const runtime = normalizeRuntime(options.runtime);
+
+        if (runtime === 'mlx') {
+            await handleMlxInstalled(options);
+            return;
+        }
+
         if (!options.json) showAsciiArt('installed');
         const spinner = ora('Analyzing installed models...').start();
 
@@ -3603,9 +3710,6 @@ program
             if (!availability.available) {
                 spinner.fail('Ollama not available');
                 if (options.json) {
-                    // --json must always emit parseable JSON on stdout (the success
-                    // path prints an array); previously these branches printed
-                    // ANSI-colored prose and broke `installed --json | jq`.
                     console.log(JSON.stringify([], null, 2));
                 } else {
                     console.log(chalk.red('\n' + availability.error));
@@ -3765,6 +3869,96 @@ program
             console.error(chalk.red('Error:'), error.message);
             if (process.env.DEBUG) {
                 console.error(error.stack);
+            }
+        }
+    });
+
+// New command: mlx-sync - Sync MLX model catalog from HuggingFace
+program
+    .command('mlx-sync')
+    .description('Sync MLX model catalog from HuggingFace mlx-community')
+    .option('--limit <n>', 'Number of models to fetch (default: 20)', '20')
+    .option('--save', 'Save synced models to seed catalog file')
+    .option('--json', 'Output as JSON')
+    .option('--compare', 'Compare with current seed catalog and show differences')
+    .action(async (options) => {
+        const MLXModelCatalog = require('../src/mlx/model-catalog');
+        const catalog = new MLXModelCatalog();
+        const limit = parseInt(options.limit) || 20;
+
+        if (!options.json) {
+            console.log(chalk.cyan.bold('\n  MLX Model Sync'));
+            console.log(chalk.gray(`  Fetching top ${limit} models from HuggingFace mlx-community...`));
+        }
+
+        try {
+            const models = await catalog.searchHuggingface('mlx-community', limit);
+
+            if (!models || models.length === 0) {
+                if (options.json) {
+                    console.log(JSON.stringify({ success: false, error: 'No models found or network error' }, null, 2));
+                } else {
+                    console.log(chalk.yellow('\n  No models found. Network might be unavailable.'));
+                    console.log(chalk.gray('  Using cached seed catalog with 15 curated models.'));
+                }
+                return;
+            }
+
+            if (options.json) {
+                console.log(JSON.stringify({ success: true, count: models.length, models }, null, 2));
+                return;
+            }
+
+            console.log(chalk.green(`\n  Found ${models.length} MLX models on HuggingFace:\n`));
+
+            // Show in a table
+            const tableData = [[chalk.bold(' #'), chalk.bold('Model'), chalk.bold('Downloads'), chalk.bold('Pipeline')]];
+            models.forEach((m, i) => {
+                tableData.push([
+                    `${i + 1}.`,
+                    m.name.length > 40 ? m.name.substring(0, 37) + '...' : m.name,
+                    (m.downloads || 0).toLocaleString(),
+                    m.pipeline || 'text-generation'
+                ]);
+            });
+            const table = require('table');
+            console.log(table.table(tableData));
+
+            // Compare with seed catalog
+            if (options.compare) {
+                const seed = catalog.getAllModels();
+                const seedNames = new Set(seed.map(m => m.name.toLowerCase()));
+                const newModels = models.filter(m => !seedNames.has(m.name.toLowerCase()));
+
+                if (newModels.length > 0) {
+                    console.log(chalk.cyan(`\n  New models not in seed catalog (${newModels.length}):`));
+                    newModels.slice(0, 10).forEach(m => {
+                        console.log(chalk.gray(`    • ${m.name} (${(m.downloads || 0).toLocaleString()} downloads)`));
+                    });
+                } else {
+                    console.log(chalk.green('\n  All fetched models are already in seed catalog.'));
+                }
+            }
+
+            if (options.save) {
+                // Save to a JSON file for review
+                const fs = require('fs');
+                const path = require('path');
+                const outPath = path.join(process.cwd(), 'mlx-sync-results.json');
+                fs.writeFileSync(outPath, JSON.stringify(models, null, 2));
+                console.log(chalk.green(`\n  Saved to ${outPath}`));
+                console.log(chalk.gray('  Review and merge relevant models into src/mlx/model-catalog.js'));
+            }
+
+            console.log(chalk.gray('\n  Tip: Use --compare to see new models not in seed catalog.'));
+            console.log(chalk.gray('  Use --save to export results to JSON.'));
+            console.log(chalk.gray('  Seed catalog has 15 curated models in src/mlx/model-catalog.js'));
+
+        } catch (error) {
+            if (options.json) {
+                console.log(JSON.stringify({ success: false, error: error.message }, null, 2));
+            } else {
+                console.error(chalk.red('\n  Sync failed:'), error.message);
             }
         }
     });
