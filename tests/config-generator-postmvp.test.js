@@ -3,26 +3,27 @@ const ConfigGenerator = require('../src/config/generator');
 describe('ConfigGenerator POST-MVP', () => {
     const gen = new ConfigGenerator();
 
-    test('generateOptimizedMLXServerCommand includes --kv-bits 4', () => {
+    test('generateOptimizedMLXServerCommand includes prompt-cache-size', () => {
         const cmd = gen.generateOptimizedMLXServerCommand('mlx-community/Qwen3.5-9B-OptiQ-4bit', 'coding', 48);
-        expect(cmd).toContain('--kv-bits 4');
-        expect(cmd).toContain('--max-kv-size');
+        expect(cmd).toContain('--prompt-cache-size');
         expect(cmd).toContain('--trust-remote-code');
         expect(cmd).toContain('mlx_lm.server');
+        expect(cmd).toContain('--temp 0.15');
     });
 
-    test('generateOptimizedMLXServerCommand adjusts maxKvSize by RAM', () => {
+    test('generateOptimizedMLXServerCommand adjusts cache by RAM', () => {
         const cmd16GB = gen.generateOptimizedMLXServerCommand('test', 'general', 16);
         const cmd48GB = gen.generateOptimizedMLXServerCommand('test', 'general', 48);
-        // kv size should be larger for 48GB
-        const kv16 = parseInt(cmd16GB.match(/--max-kv-size (\d+)/)[1]);
-        const kv48 = parseInt(cmd48GB.match(/--max-kv-size (\d+)/)[1]);
-        expect(kv48).toBeGreaterThan(kv16);
+        // cache should be larger for 48GB
+        const cache16 = parseInt(cmd16GB.match(/--prompt-cache-size (\d+)/)[1]);
+        const cache48 = parseInt(cmd48GB.match(/--prompt-cache-size (\d+)/)[1]);
+        expect(cache48).toBeGreaterThan(cache16);
     });
 
-    test('generateOptimizedMLXServerCommand accepts custom kvBits', () => {
-        const cmd = gen.generateOptimizedMLXServerCommand('test', 'general', 32, { kvBits: 8 });
-        expect(cmd).toContain('--kv-bits 8');
+    test('generateMLXRunCommand uses kv-bits (valid for mlx_lm.generate)', () => {
+        const cmd = gen.generateMLXRunCommand('mlx-community/test-model', 'coding', { kvBits: 4, maxKvSize: 32768 });
+        expect(cmd).toContain('--kv-bits 4');
+        expect(cmd).toContain('--max-kv-size 32768');
     });
 
     test('generateWiredMemoryHint returns correct values for 48GB', () => {

@@ -90,23 +90,18 @@ describe('ConfigGenerator — edge cases & negatives', () => {
 
     // ── generateOptimizedMLXServerCommand edge cases ──
     test('generateOptimizedMLXServerCommand handles 0 RAM', () => {
-        // Should not crash, kvSize should be at minimum 8192
         const cmd = gen.generateOptimizedMLXServerCommand('test', 'general', 0);
-        expect(cmd).toContain('--max-kv-size');
-        const match = cmd.match(/--max-kv-size (\d+)/);
-        expect(match).toBeTruthy();
-        expect(parseInt(match[1])).toBeGreaterThanOrEqual(8192);
+        expect(cmd).toContain('--prompt-cache-size');
+        expect(cmd).toContain('--trust-remote-code');
     });
 
     test('generateOptimizedMLXServerCommand handles negative RAM', () => {
         const cmd = gen.generateOptimizedMLXServerCommand('test', 'general', -10);
-        const match = cmd.match(/--max-kv-size (\d+)/);
-        expect(match).toBeTruthy();
-        expect(parseInt(match[1])).toBeGreaterThanOrEqual(8192);
+        expect(cmd).toContain('--prompt-cache-size');
     });
 
-    test('generateOptimizedMLXServerCommand with kvBits=0', () => {
-        const cmd = gen.generateOptimizedMLXServerCommand('test', 'general', 32, { kvBits: 0 });
+    test('generateMLXRunCommand with kvBits=0 (valid for mlx_lm.generate)', () => {
+        const cmd = gen.generateMLXRunCommand('test', 'general', { kvBits: 0 });
         expect(cmd).toContain('--kv-bits 0');
     });
 

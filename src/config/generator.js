@@ -47,8 +47,8 @@ class ConfigGenerator {
         if (repeatPenalty !== 1.0) cmd += ` --repetition-penalty ${repeatPenalty}`;
         if (options.topK) cmd += ` --top-k ${options.topK}`;
         if (options.seed !== undefined) cmd += ` --seed ${options.seed}`;
-        if (options.kvBits) cmd += ` --kv-bits ${options.kvBits}`;
-        if (options.maxKvSize) cmd += ` --max-kv-size ${options.maxKvSize}`;
+        if (options.kvBits !== undefined) cmd += ` --kv-bits ${options.kvBits}`;
+        if (options.maxKvSize !== undefined) cmd += ` --max-kv-size ${options.maxKvSize}`;
 
         return cmd;
     }
@@ -63,16 +63,20 @@ class ConfigGenerator {
      */
     generateOptimizedMLXServerCommand(modelRef, useCase = 'general', totalRAMGB = 48, options = {}) {
         const preset = this.getOptimalConfig(useCase);
-        const kvBits = options.kvBits ?? 4;
-        const maxKvSize = options.maxKvSize ?? Math.min(32768, Math.max(8192, (totalRAMGB - 4) * 750));
         const temp = options.temperature ?? preset.temperature;
+        const maxContext = preset.maxTokens || 4096;
+
+        // Prompt cache size: estimate based on KV cache per token
+        // mlx_lm.server uses --prompt-cache-size in bytes
+        // Rough formula: model * 2 bytes * context / 10 (conservative estimate for 4bit)
+        const promptCacheBytes = Math.round(totalRAMGB * 0.15 * (1024 ** 3));
 
         let cmd = `mlx_lm.server --model ${modelRef}`;
-        cmd += ` --max-kv-size ${maxKvSize}`;
-        cmd += ` --kv-bits ${kvBits}`;
+        cmd += ` --prompt-cache-size ${promptCacheBytes}`;
         cmd += ` --trust-remote-code`;
         cmd += ` --temp ${temp}`;
         if (preset.topP) cmd += ` --top-p ${preset.topP}`;
+        if (preset.maxTokens) cmd += ` --max-tokens ${preset.maxTokens}`;
         if (options.seed !== undefined) cmd += ` --seed ${options.seed}`;
 
         return cmd;
