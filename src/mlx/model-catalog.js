@@ -20,6 +20,7 @@ const MLX_SEED_MODELS = [
     { name: 'DeepSeek-R1-Distill-Qwen-32B-4bit', hfPath: 'mlx-community/DeepSeek-R1-Distill-Qwen-32B-4bit', paramsB: 32, quantization: '4bit', category: 'reasoning', isMoE: false, context: 65536 },
     { name: 'DeepSeek-R1-Distill-Qwen-14B-4bit', hfPath: 'mlx-community/DeepSeek-R1-Distill-Qwen-14B-4bit', paramsB: 14, quantization: '4bit', category: 'reasoning', isMoE: false, context: 65536 },
     { name: 'DeepSeek-R1-Distill-Qwen-7B-4bit', hfPath: 'mlx-community/DeepSeek-R1-Distill-Qwen-7B-4bit', paramsB: 7, quantization: '4bit', category: 'reasoning', isMoE: false, context: 32768 },
+    { name: 'DeepSeek-R1-Distill-Qwen-1.5B-4bit', hfPath: 'mlx-community/DeepSeek-R1-Distill-Qwen-1.5B-4bit', paramsB: 1.5, quantization: '4bit', category: 'reasoning', isMoE: false, context: 16384 },
     // General models
     { name: 'Qwen3.6-27B-OptiQ-4bit', hfPath: 'mlx-community/Qwen3.6-27B-OptiQ-4bit', paramsB: 27, quantization: 'OptiQ-4bit', category: 'general', isMoE: false, context: 131072 },
     { name: 'Gemma-4-27B-4bit', hfPath: 'mlx-community/Gemma-4-27B-4bit', paramsB: 27, quantization: '4bit', category: 'general', isMoE: false, context: 32768 },
