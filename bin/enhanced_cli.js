@@ -3317,11 +3317,12 @@ async function displayMlxRecommendations(hardware, useCase) {
                 console.log(`      RAM: ${m.totalGB}GB | Quant: ${m.quantization} | Context: ${(m.context || 4096).toLocaleString()}`);
                 // Show all mode options
                 const mlxServerCmd = gen.generateMLXServerCommand(m.hfPath, cat, totalRAM);
-                const omlx = gen.generateOMLXSetupCommand(m.hfPath, cat);
+                const omlx = gen.generateOMLXSetupCommand(m.hfPath, cat, { totalRAM });
+                const kp = omlx.keyParams;
                 console.log(`      ${chalk.bold('mlx_lm.server:')} ${chalk.gray(mlxServerCmd)}`);
                 console.log(`      ${chalk.bold('oMLX:')}          ${chalk.gray(omlx.serve)}`);
-                console.log(`      ${chalk.bold('oMLX config:')}   ${chalk.gray(`→ ${omlx.configFile}`)}`);
-                console.log(`                       ${chalk.gray(omlx.modelConfig.replace(/\n/g, '\n                       '))}`);
+                console.log(`      ${chalk.bold('oMLX params:')}   temp=${kp.temperature} top_p=${kp.top_p} ctx=${kp.ctx_window} max_tok=${kp.max_tokens}`);
+                console.log(`                       KV cache: ${kp.kv_cache_bits}bit | Thinking: ${kp.thinking} | DFlash: ${kp.dflash} | MTP: ${kp.mtp}`);
                 console.log(`      ${chalk.bold('Direct:')}        ${chalk.gray(`mlx_lm.generate --model ${m.hfPath} --kv-bits 4 --temp ${gen.getOptimalConfig(cat).temperature}`)}`);
             });
         });
@@ -4848,12 +4849,14 @@ async function handleMlxAiRun(options) {
                         console.log(`       Quality penalty: ${catalog.getQualityPenalty(best.quantization, true)}% (QAT bonus)`);
                     }
                     // Show run commands for all 3 modes
-                    const mlxServerCmd = gen.generateMLXServerCommand(best.hfPath, uc, systemInfo.memory?.total || 48);
-                    const omlx = gen.generateOMLXSetupCommand(best.hfPath, uc);
+                    const totalRAM = systemInfo.memory?.total || 48;
+                    const mlxServerCmd = gen.generateMLXServerCommand(best.hfPath, uc, totalRAM);
+                    const omlx = gen.generateOMLXSetupCommand(best.hfPath, uc, { totalRAM });
+                    const kp = omlx.keyParams;
                     console.log(`       ${chalk.bold('mlx_lm.server:')} ${chalk.gray(mlxServerCmd)}`);
                     console.log(`       ${chalk.bold('oMLX:')}          ${chalk.gray(omlx.serve)}`);
-                    console.log(`       ${chalk.bold('oMLX config:')}   ${chalk.gray(`→ ${omlx.configFile}`)}`);
-                    console.log(`                        ${chalk.gray(omlx.modelConfig.replace(/\n/g, '\n                        '))}`);
+                    console.log(`       ${chalk.bold('oMLX params:')}   temp=${kp.temperature} top_p=${kp.top_p} ctx=${kp.ctx_window} max_tok=${kp.max_tokens}`);
+                    console.log(`                        KV cache: ${kp.kv_cache_bits}bit | Thinking: ${kp.thinking} | DFlash: ${kp.dflash} | MTP: ${kp.mtp}`);
                     console.log(`       ${chalk.bold('Direct:')}        ${chalk.gray(`mlx_lm.generate --model ${best.hfPath} --kv-bits 4 --temp ${gen.getOptimalConfig(uc).temperature}`)}`);
                 }
             });
