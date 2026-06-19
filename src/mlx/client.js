@@ -25,11 +25,15 @@ class MLXClient {
 
     normalizeBaseURL(baseURL) {
         let normalized = String(baseURL || '').trim();
+        if (!normalized) {
+            return 'http://localhost/v1';
+        }
         if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {
             normalized = 'http://' + normalized;
         }
         try {
             const parsed = new URL(normalized);
+            if (!parsed.hostname) throw new Error('empty host');
             if (!parsed.pathname || parsed.pathname === '/') {
                 parsed.pathname = '/v1';
             }
@@ -56,6 +60,7 @@ class MLXClient {
     }
 
     calculateTokensPerSecond(usage = {}) {
+        usage = usage || {};
         const promptTPS = Number(usage.prompt_tokens_per_second) || 0;
         const generationTPS = Number(usage.generation_tokens_per_second) || 0;
         const evalCount = Number(usage.eval_count) || 0;

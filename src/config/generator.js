@@ -106,8 +106,10 @@ class ConfigGenerator {
      * @returns {object} oMLX settings object
      */
     generateOMLXSettings(model, useCase = 'general') {
+        if (!model) return {};
         const preset = this.getOptimalConfig(useCase);
-        const modelKey = (model.name || model).replace(/\W/g, '_');
+        const modelName = model.name || (typeof model === 'string' ? model : 'unknown');
+        const modelKey = String(modelName).replace(/\W/g, '_') || 'unknown_model';
         return {
             [modelKey]: {
                 temperature: preset.temperature,
@@ -157,7 +159,7 @@ class ConfigGenerator {
         cmd += ` --temp ${preset.temperature}`;
         cmd += ` --top-p ${preset.topP}`;
         cmd += ` -n ${preset.maxTokens}`;
-        if (gpuLayers === -1) cmd += ' -ngl 999';
+        if (gpuLayers < 0) cmd += ' -ngl 999';
         else cmd += ` -ngl ${gpuLayers}`;
         if (preset.repeatPenalty !== 1.0) cmd += ` --repeat-penalty ${preset.repeatPenalty}`;
         return cmd;

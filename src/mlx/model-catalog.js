@@ -93,6 +93,7 @@ class MLXModelCatalog {
     }
 
     getMemoryEstimate(paramsB, quantization, contextLength = 4096) {
+        paramsB = Math.max(0, paramsB); // clamp negative
         const bytesPerParam = {
             'Q4_K_M': 0.58, 'Q8_0': 1.05, 'FP16': 2.0,
             '4bit': 0.5, '8bit': 1.0, 'OptiQ-4bit': 0.5,
