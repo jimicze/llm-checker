@@ -79,3 +79,4 @@ debug.log
 # Transient feature-probe artifacts (never commit)
 .tmp-feature-check/
 .tmp-*/
+session-*.md
