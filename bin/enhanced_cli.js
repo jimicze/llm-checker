@@ -3320,7 +3320,9 @@ async function displayMlxRecommendations(hardware, useCase) {
                 const omlx = gen.generateOMLXSetupCommand(m.hfPath, cat);
                 console.log(`      ${chalk.bold('mlx_lm.server:')} ${chalk.gray(mlxServerCmd)}`);
                 console.log(`      ${chalk.bold('oMLX:')}          ${chalk.gray(omlx.serve)}`);
-                console.log(`      ${chalk.bold('Direct:')}        ${chalk.gray(`mlx_lm.generate --model ${m.hfPath} --kv-bits 4`)}`);
+                console.log(`      ${chalk.bold('oMLX config:')}   ${chalk.gray(`→ ${omlx.configFile}`)}`);
+                console.log(`                       ${chalk.gray(omlx.modelConfig.replace(/\n/g, '\n                       '))}`);
+                console.log(`      ${chalk.bold('Direct:')}        ${chalk.gray(`mlx_lm.generate --model ${m.hfPath} --kv-bits 4 --temp ${gen.getOptimalConfig(cat).temperature}`)}`);
             });
         });
 
@@ -4845,8 +4847,10 @@ async function handleMlxAiRun(options) {
                     const mlxServerCmd = gen.generateMLXServerCommand(best.hfPath, uc, systemInfo.memory?.total || 48);
                     const omlx = gen.generateOMLXSetupCommand(best.hfPath, uc);
                     console.log(`       ${chalk.bold('mlx_lm.server:')} ${chalk.gray(mlxServerCmd)}`);
-                    console.log(`       ${chalk.bold('oMLX server:')}  ${chalk.gray(omlx.serve)}`);
-                    console.log(`       ${chalk.bold('Direct MLX:')}   ${chalk.gray(`mlx_lm.generate --model ${best.hfPath} --kv-bits 4 --temp ${gen.getOptimalConfig(uc).temperature}`)}`);
+                    console.log(`       ${chalk.bold('oMLX:')}          ${chalk.gray(omlx.serve)}`);
+                    console.log(`       ${chalk.bold('oMLX config:')}   ${chalk.gray(`→ ${omlx.configFile}`)}`);
+                    console.log(`                        ${chalk.gray(omlx.modelConfig.replace(/\n/g, '\n                        '))}`);
+                    console.log(`       ${chalk.bold('Direct:')}        ${chalk.gray(`mlx_lm.generate --model ${best.hfPath} --kv-bits 4 --temp ${gen.getOptimalConfig(uc).temperature}`)}`);
                 }
             });
 

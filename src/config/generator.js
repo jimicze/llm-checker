@@ -84,13 +84,26 @@ class ConfigGenerator {
     generateOMLXSetupCommand(modelRef, useCase = 'general', options = {}) {
         const preset = this.getOptimalConfig(useCase);
         const temp = options.temperature ?? preset.temperature;
+        const modelKey = (modelRef.split('/').pop() || modelRef).replace(/[^a-zA-Z0-9_-]/g, '_');
+
+        // oMLX per-model config snippet (~/.omlx/model_settings.json)
+        const modelConfig = {
+            [modelKey]: {
+                temperature: temp,
+                top_p: preset.topP,
+                max_tokens: preset.maxTokens,
+                repetition_penalty: preset.repeatPenalty
+            }
+        };
 
         return {
             install: 'brew install omlx',
             serve: `omlx serve --model-dir ~/models`,
             apiEndpoint: 'http://localhost:8000/v1/chat/completions',
             curlExample: `curl http://localhost:8000/v1/chat/completions \\
-  -d '{"model": "${modelRef.split('/').pop()}", "messages": [{"role": "user", "content": "Hello"}], "temperature": ${temp}}'`,
+  -d '{"model": "${modelRef.split('/').pop()}", "messages": [{"role": "user", "content": "Hello"}], "temperature": ${temp}, "top_p": ${preset.topP}, "max_tokens": ${preset.maxTokens}}'`,
+            configFile: '~/.omlx/model_settings.json',
+            modelConfig: JSON.stringify(modelConfig, null, 2),
             tip: 'oMLX automatically detects models in ~/models directory'
         };
     }
