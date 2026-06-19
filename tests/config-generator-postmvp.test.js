@@ -3,17 +3,17 @@ const ConfigGenerator = require('../src/config/generator');
 describe('ConfigGenerator POST-MVP', () => {
     const gen = new ConfigGenerator();
 
-    test('generateOptimizedMLXServerCommand includes prompt-cache-size', () => {
-        const cmd = gen.generateOptimizedMLXServerCommand('mlx-community/Qwen3.5-9B-OptiQ-4bit', 'coding', 48);
+    test('generateMLXServerCommand includes prompt-cache-size', () => {
+        const cmd = gen.generateMLXServerCommand('mlx-community/Qwen3.5-9B-OptiQ-4bit', 'coding', 48);
         expect(cmd).toContain('--prompt-cache-size');
         expect(cmd).toContain('--trust-remote-code');
         expect(cmd).toContain('mlx_lm.server');
         expect(cmd).toContain('--temp 0.15');
     });
 
-    test('generateOptimizedMLXServerCommand adjusts cache by RAM', () => {
-        const cmd16GB = gen.generateOptimizedMLXServerCommand('test', 'general', 16);
-        const cmd48GB = gen.generateOptimizedMLXServerCommand('test', 'general', 48);
+    test('generateMLXServerCommand adjusts cache by RAM', () => {
+        const cmd16GB = gen.generateMLXServerCommand('test', 'general', 16);
+        const cmd48GB = gen.generateMLXServerCommand('test', 'general', 48);
         // cache should be larger for 48GB
         const cache16 = parseInt(cmd16GB.match(/--prompt-cache-size (\d+)/)[1]);
         const cache48 = parseInt(cmd48GB.match(/--prompt-cache-size (\d+)/)[1]);

@@ -88,15 +88,15 @@ describe('ConfigGenerator — edge cases & negatives', () => {
         expect(cmd).toContain('-ngl 999');
     });
 
-    // ── generateOptimizedMLXServerCommand edge cases ──
-    test('generateOptimizedMLXServerCommand handles 0 RAM', () => {
-        const cmd = gen.generateOptimizedMLXServerCommand('test', 'general', 0);
+    // ── generateMLXServerCommand edge cases ──
+    test('generateMLXServerCommand handles 0 RAM', () => {
+        const cmd = gen.generateMLXServerCommand('test', 'general', 0);
         expect(cmd).toContain('--prompt-cache-size');
         expect(cmd).toContain('--trust-remote-code');
     });
 
-    test('generateOptimizedMLXServerCommand handles negative RAM', () => {
-        const cmd = gen.generateOptimizedMLXServerCommand('test', 'general', -10);
+    test('generateMLXServerCommand handles negative RAM', () => {
+        const cmd = gen.generateMLXServerCommand('test', 'general', -10);
         expect(cmd).toContain('--prompt-cache-size');
     });
 

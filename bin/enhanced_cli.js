@@ -3315,9 +3315,12 @@ async function displayMlxRecommendations(hardware, useCase) {
                 const marker = i === 0 ? '►' : '•';
                 console.log(`    ${marker} ${m.name}${qatTag}${moeTag}`);
                 console.log(`      RAM: ${m.totalGB}GB | Quant: ${m.quantization} | Context: ${(m.context || 4096).toLocaleString()}`);
-                // Show run command
-                const cmd = gen.generateOptimizedMLXServerCommand(m.hfPath, cat, totalRAM);
-                console.log(`      ${chalk.gray(cmd)}`);
+                // Show all mode options
+                const mlxServerCmd = gen.generateMLXServerCommand(m.hfPath, cat, totalRAM);
+                const omlx = gen.generateOMLXSetupCommand(m.hfPath, cat);
+                console.log(`      ${chalk.bold('mlx_lm.server:')} ${chalk.gray(mlxServerCmd)}`);
+                console.log(`      ${chalk.bold('oMLX:')}          ${chalk.gray(omlx.serve)}`);
+                console.log(`      ${chalk.bold('Direct:')}        ${chalk.gray(`mlx_lm.generate --model ${m.hfPath} --kv-bits 4`)}`);
             });
         });
 
@@ -4838,9 +4841,12 @@ async function handleMlxAiRun(options) {
                     if (best.isQAT) {
                         console.log(`       Quality penalty: ${catalog.getQualityPenalty(best.quantization, true)}% (QAT bonus)`);
                     }
-                    // Show run command
-                    const cmd = gen.generateOptimizedMLXServerCommand(best.hfPath, uc, systemInfo.memory?.total || 48);
-                    console.log(`       ${chalk.gray(cmd)}`);
+                    // Show run commands for all 3 modes
+                    const mlxServerCmd = gen.generateMLXServerCommand(best.hfPath, uc, systemInfo.memory?.total || 48);
+                    const omlx = gen.generateOMLXSetupCommand(best.hfPath, uc);
+                    console.log(`       ${chalk.bold('mlx_lm.server:')} ${chalk.gray(mlxServerCmd)}`);
+                    console.log(`       ${chalk.bold('oMLX server:')}  ${chalk.gray(omlx.serve)}`);
+                    console.log(`       ${chalk.bold('Direct MLX:')}   ${chalk.gray(`mlx_lm.generate --model ${best.hfPath} --kv-bits 4 --temp ${gen.getOptimalConfig(uc).temperature}`)}`);
                 }
             });
 

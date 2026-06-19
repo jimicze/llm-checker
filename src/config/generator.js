@@ -61,14 +61,9 @@ class ConfigGenerator {
      * @param {object} options - Override options (kvBits, maxKvSize, temperature, topP, seed)
      * @returns {string} Shell command
      */
-    generateOptimizedMLXServerCommand(modelRef, useCase = 'general', totalRAMGB = 48, options = {}) {
+    generateMLXServerCommand(modelRef, useCase = 'general', totalRAMGB = 48, options = {}) {
         const preset = this.getOptimalConfig(useCase);
         const temp = options.temperature ?? preset.temperature;
-        const maxContext = preset.maxTokens || 4096;
-
-        // Prompt cache size: estimate based on KV cache per token
-        // mlx_lm.server uses --prompt-cache-size in bytes
-        // Rough formula: model * 2 bytes * context / 10 (conservative estimate for 4bit)
         const promptCacheBytes = Math.round(totalRAMGB * 0.15 * (1024 ** 3));
 
         let cmd = `mlx_lm.server --model ${modelRef}`;
@@ -80,6 +75,24 @@ class ConfigGenerator {
         if (options.seed !== undefined) cmd += ` --seed ${options.seed}`;
 
         return cmd;
+    }
+
+    /**
+     * Generate oMLX server setup and run instructions
+     * oMLX (brew install omlx) provides an OpenAI-compatible API server on :8000/v1
+     */
+    generateOMLXSetupCommand(modelRef, useCase = 'general', options = {}) {
+        const preset = this.getOptimalConfig(useCase);
+        const temp = options.temperature ?? preset.temperature;
+
+        return {
+            install: 'brew install omlx',
+            serve: `omlx serve --model-dir ~/models`,
+            apiEndpoint: 'http://localhost:8000/v1/chat/completions',
+            curlExample: `curl http://localhost:8000/v1/chat/completions \\
+  -d '{"model": "${modelRef.split('/').pop()}", "messages": [{"role": "user", "content": "Hello"}], "temperature": ${temp}}'`,
+            tip: 'oMLX automatically detects models in ~/models directory'
+        };
     }
 
     /**
